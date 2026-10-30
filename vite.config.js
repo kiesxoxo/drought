@@ -33,6 +33,9 @@ export default defineConfig(({ command, mode }) => {
     plugins: [
       tailwindcss(),
       svelte({
+        // Our own components must use runes; dependencies compile as they are
+        dynamicCompileOptions: ({ filename }) =>
+          filename.includes('/node_modules/') ? undefined : { runes: true },
         // The original components predate these a11y checks; keep output readable
         onwarn: (warning, handler) => {
           if (warning.code?.startsWith('a11y')) return;
