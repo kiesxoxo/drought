@@ -9,3 +9,6 @@
 public.zip
 
 .eslintcache
+
+/test-results/
+/playwright-report/

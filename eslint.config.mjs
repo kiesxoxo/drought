@@ -32,6 +32,13 @@ export default [
     },
   },
   {
+    // Browser tests, the mock server and tool configs run in Node
+    files: ['tests/**/*.{js,mjs}', '*.config.js'],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
+  {
     files: ['**/*.svelte'],
 
     languageOptions: {

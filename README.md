@@ -106,7 +106,8 @@ To update follow the following steps (feel free to write a cron job script for t
 1. Run `npm start`.
 1. Access the UI in your browser at `localhost:8080/transmission/web/`.
 1. `npm run build` writes the production build to `dist/`.
-1. Before pushing, run `npm run lint`, `npm run format:check` and `npm test`; CI runs the same checks plus a build on every push and pull request.
+1. Before pushing, run `npm run lint`, `npm run format:check`, `npm test` and `npm run test:e2e`; CI runs the same checks plus a build on every push and pull request.
+1. `npm run test:e2e` builds the app and runs browser tests ([Playwright](https://playwright.dev)) against a mock Transmission server with made-up data (`tests/e2e/mock-transmission.mjs`). Run `npx playwright install chromium` once first. The same mock is handy for UI work without a real Transmission: `npm run build && node tests/e2e/mock-transmission.mjs`, then open `http://localhost:8098/transmission/web/`.
 
 If you'd rather call Transmission directly with the `TRANSMISSION_HOST` variables, and it's running on a different machine behind Nginx or similar you may have to allow for CORS request. You can do this by adding the code below to your Transmission location block.
 
