@@ -18,7 +18,7 @@
     validationMessage = '',
     // [{ iconName: 'Add' | 'Remove' | 'Search', onClick, label? }]
     addons = [],
-    input = $bindable(null),
+    input = $bindable(),
     id = `input-text-${num}`,
     disabled = false,
     // Extra controls shown inside the field, next to the addons

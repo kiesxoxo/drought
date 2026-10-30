@@ -377,7 +377,7 @@ const createTorrents = () =>
       'seedIdleMode': 0,
       'seedRatioLimit': 2,
       'seedRatioMode': 0,
-      'sequentialDownload': false,
+      // Like Transmission 4.1, sequentialDownload is not returned
       files,
       fileStats,
       'peers': Array.from({ length: Math.min(t.peers, 12) }, (_, p) => ({

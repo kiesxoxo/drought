@@ -7,8 +7,10 @@
 
   let {
     label = null,
-    checked = $bindable(false),
-    group = $bindable(null),
+    // No fallbacks: binding undefined to a bindable prop with a default throws,
+    // and Transmission omits fields it doesn't support (e.g. sequentialDownload)
+    checked = $bindable(),
+    group = $bindable(),
     value = null,
     hint = null,
     onchange,
