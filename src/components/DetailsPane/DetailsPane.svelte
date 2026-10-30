@@ -12,6 +12,7 @@
   import Files from '~components/Modal/TorrentDetail/Files';
   import Peers from '~components/Modal/TorrentDetail/Peers';
   import Trackers from '~components/Modal/TorrentDetail/Trackers';
+  import PrioritySelect from '~components/PriorityIndicator';
   import ArrivalRenderer from '~components/TorrentList/Renderers/ArrivalRenderer.svelte';
   import {
     torrentDetails,
@@ -118,6 +119,16 @@
     }));
   };
 
+  const setPriority = (priority) => {
+    torrents.setTorrents([torrentId], {
+      [TRANSMISSION_COLUMN.PRIORITY]: priority,
+    });
+    torrentDetails.update((current) => ({
+      ...current,
+      [TRANSMISSION_COLUMN.PRIORITY]: priority,
+    }));
+  };
+
   const rename = (event) => {
     renaming = false;
     const oldName = torrent[TRANSMISSION_COLUMN.NAME];
@@ -217,6 +228,12 @@
               ETA <ArrivalRenderer value={torrent[TRANSMISSION_COLUMN.ETA]} />
             </span>
           </div>
+          <PrioritySelect
+            value={torrent[TRANSMISSION_COLUMN.PRIORITY]}
+            label="Torrent priority"
+            onchange={setPriority}
+            class="shrink-0"
+          />
           <Button
             variant="outline"
             size="xs"

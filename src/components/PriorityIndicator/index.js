@@ -1,1 +1,1 @@
-export { default } from './PriorityIndicator.svelte';
+export { default } from './PrioritySelect.svelte';

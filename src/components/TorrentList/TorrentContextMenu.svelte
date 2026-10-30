@@ -33,7 +33,7 @@
         .filter((torrent) => selected.has(torrent.id))
         .map((torrent) => torrent[TRANSMISSION_COLUMN_PRIORITY])
     );
-    return priorities.size === 1 ? String([...priorities][0]) : undefined;
+    return priorities.size === 1 ? String([...priorities][0]) : '';
   });
 
   const setPriority = (value) => {
@@ -87,7 +87,9 @@
     <ContextMenu.SubContent class="w-36">
       <ContextMenu.RadioGroup value={priority} onValueChange={setPriority}>
         {#each PRIORITIES as { value, label } (value)}
-          <ContextMenu.RadioItem value={value}>{label}</ContextMenu.RadioItem>
+          <ContextMenu.RadioItem closeOnSelect value={value}
+            >{label}</ContextMenu.RadioItem
+          >
         {/each}
       </ContextMenu.RadioGroup>
     </ContextMenu.SubContent>

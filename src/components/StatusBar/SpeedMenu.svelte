@@ -78,12 +78,12 @@
       value={$speedLimit === null ? UNLIMITED : String($speedLimit)}
       onValueChange={handleChange}
     >
-      <DropdownMenu.RadioItem value={UNLIMITED}
+      <DropdownMenu.RadioItem closeOnSelect value={UNLIMITED}
         >Unlimited</DropdownMenu.RadioItem
       >
       <DropdownMenu.Separator />
       {#each limits as limit (limit)}
-        <DropdownMenu.RadioItem value={String(limit)}>
+        <DropdownMenu.RadioItem closeOnSelect value={String(limit)}>
           {formatSpeed(limit, 'kB')}
         </DropdownMenu.RadioItem>
       {/each}

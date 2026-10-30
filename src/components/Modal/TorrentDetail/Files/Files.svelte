@@ -23,7 +23,7 @@
   import FileIcon from '@lucide/svelte/icons/file';
   import HardDriveIcon from '@lucide/svelte/icons/hard-drive';
   import SearchIcon from '@lucide/svelte/icons/search';
-  import PriorityIndicator from '~components/PriorityIndicator';
+  import PrioritySelect from '~components/PriorityIndicator';
 
   const ROW_HEIGHT = 30;
   const OVERSCAN = 10;
@@ -137,11 +137,11 @@
     );
   };
 
-  const setRowPriority = (row, event) => {
+  const setRowPriority = (row, priority) => {
     torrentDetails.setFilesPriority(
       $torrentDetails,
       getRowFiles(row),
-      event.detail
+      priority
     );
   };
 
@@ -365,9 +365,12 @@
                 <span>{info.percent}%</span>
               </div>
               <div class="column priority">
-                <PriorityIndicator
+                <PrioritySelect
                   value={info.priority}
-                  on:click={(event) => setRowPriority(row, event)}
+                  label={row.folder !== undefined
+                    ? 'Priority of every file in this folder'
+                    : 'File priority'}
+                  onchange={(priority) => setRowPriority(row, priority)}
                 />
               </div>
             </div>
@@ -494,7 +497,7 @@
   .header-row,
   .row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 72px 92px 48px;
+    grid-template-columns: minmax(0, 1fr) 72px 92px 92px;
     align-items: center;
     column-gap: 12px;
   }
@@ -694,6 +697,8 @@
   .header-row .progress,
   .header-row .priority {
     display: block;
+    text-align: right;
+    padding-right: 6px;
   }
 
   .header-row .size {
@@ -703,10 +708,14 @@
   .priority {
     display: flex;
     justify-content: flex-end;
-    cursor: pointer;
   }
 
   @media (max-width: 700px) {
+    /* The icon alone is enough on narrow screens */
+    .priority :global(.priority-label) {
+      display: none;
+    }
+
     .container {
       padding: 12px 16px 0;
     }
@@ -718,7 +727,7 @@
 
     .header-row,
     .row {
-      grid-template-columns: minmax(0, 1fr) 60px 36px 40px;
+      grid-template-columns: minmax(0, 1fr) 60px 36px 32px;
       column-gap: 8px;
     }
 

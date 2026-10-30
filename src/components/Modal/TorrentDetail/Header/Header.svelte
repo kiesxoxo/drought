@@ -19,7 +19,7 @@
   } from '~helpers/constants/columns';
   import { getSize } from '~helpers/sizeHelper';
   import ArrivalRenderer from '~components/TorrentList/Renderers/ArrivalRenderer.svelte';
-  import PriorityIndicator from '~components/PriorityIndicator/PriorityIndicator.svelte';
+  import PrioritySelect from '~components/PriorityIndicator';
   import ProgressRenderer from '~components/TorrentList/Renderers/ProgressRenderer';
   import { generateTorrentStatusClass } from '~helpers/classHelper';
 
@@ -49,8 +49,7 @@
     perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
   });
 
-  const updatePriority = (event) => {
-    const newPrio = event.detail;
+  const updatePriority = (newPrio) => {
     torrents.setTorrents([torrentId], {
       [TRANSMISSION_COLUMN.PRIORITY]: newPrio,
     });
@@ -175,10 +174,10 @@
 
     <ul class="right">
       <li class="button">
-        <PriorityIndicator
+        <PrioritySelect
           value={$torrentDetails[TRANSMISSION_COLUMN.PRIORITY]}
-          showLabel
-          on:click={updatePriority}
+          label="Torrent priority"
+          onchange={updatePriority}
         />
       </li>
       <li
