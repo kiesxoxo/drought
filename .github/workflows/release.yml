@@ -1,39 +1,28 @@
-name: 'Release'
+name: Release
 
+# Push a tag like v1.2.0 to publish drought.zip and drought.tar.gz
 on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   release:
-    name: 'Release'
-    runs-on: 'ubuntu-latest'
+    name: Release
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Set tag var
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "tag_name=$TAG_NAME" >> $GITHUB_ENV
-      # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          # Make sure the actual branch is checked out when running on pull requests
-          ref: ${{ github.head_ref }}
+        uses: actions/checkout@v4
 
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          node-version-file: .tool-versions
+          cache: npm
 
       - name: Install modules
         run: npm ci
@@ -41,21 +30,17 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Copy build
-        run: cp -r dist drought
-
-      - name: Zip release
-        run: zip -r drought.zip drought
-
-      - name: Tar release
-        run: tar -czvf drought.tar.gz drought
+      - name: Package
+        run: |
+          cp -r dist drought
+          zip -r drought.zip drought
+          tar -czvf drought.tar.gz drought
 
       - name: Release
-        uses: 'marvinpinto/action-automatic-releases@latest'
+        uses: softprops/action-gh-release@v2
         with:
-          repo_token: '${{ secrets.GITHUB_TOKEN }}'
-          prerelease: false
-          title: '${{ env.tag_name }}'
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
           files: |
             drought.zip
             drought.tar.gz

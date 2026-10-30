@@ -6,9 +6,11 @@
     "postbuild": "workbox generateSW workbox-config.cjs",
     "start": "vite",
     "serve": "vite preview",
-    "lint": "eslint \"./src/**/*.{js,svelte}\"",
+    "lint": "eslint \"./src/**/*.{js,svelte}\" \"./tests/**/*.js\"",
     "lint:fix": "npm run lint -- --fix",
-    "prettier": "prettier --write \"./src/**/*.{js,svelte}\""
+    "prettier": "prettier --write \"./src/**/*.{js,svelte,css}\" \"./tests/**/*.js\"",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "format:check": "prettier --check \"./src/**/*.{js,svelte,css}\" \"./tests/**/*.js\""
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",

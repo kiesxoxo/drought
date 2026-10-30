@@ -1,52 +1,52 @@
 name: CI
 
-# Run this workflow every time a new commit pushed to your repository
 on:
+  push:
+    branches: [master]
   pull_request:
-    types: [opened, synchronize]
   workflow_dispatch:
 
+# A newer push to the same branch or PR supersedes the running check
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
-  # Set the job key. The key is displayed as the job name
-  # when a job name is not provided
-  format:
-    # Name the Job
-    name: Format
-    # Set the type of machine to run on
+  check:
+    name: Lint, test and build
     runs-on: ubuntu-latest
 
     steps:
-      # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          # Use head SHA for forked PRs, otherwise use head_ref for internal PRs
-          ref: ${{ github.event.pull_request.head.sha || github.head_ref }}
+        uses: actions/checkout@v4
 
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          node-version-file: .tool-versions
+          cache: npm
 
       - name: Install modules
         run: npm ci
 
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
       - name: Build
         run: npm run build
 
-      - name: Prettify code
-        uses: creyD/prettier_action@v3.1
+      - name: Upload build
+        uses: actions/upload-artifact@v4
         with:
-          prettier_options: --write ./src/**/*.{js,svelte}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run ESLint
-        run: npm run lint
+          name: drought-${{ github.sha }}
+          path: dist
+          retention-days: 14

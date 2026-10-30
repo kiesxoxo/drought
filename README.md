@@ -1,6 +1,10 @@
+<img src="public/images/drought.svg" alt="Drought logo" width="72" height="72" align="left" />
+
 # Drought
 
-![Drought logo](public/images/drought.svg)
+[![CI](https://github.com/kiesxoxo/drought/actions/workflows/ci.yml/badge.svg)](https://github.com/kiesxoxo/drought/actions/workflows/ci.yml)
+
+<br clear="left" />
 
 Drought is a fast, desktop-style web UI for [Transmission](https://transmissionbt.com/). It's a frontend web app that talks to Transmission directly, so it doesn't require any extra service running.
 
@@ -92,6 +96,7 @@ To update follow the following steps (feel free to write a cron job script for t
 1. Run `npm start`.
 1. Access the UI in your browser at `localhost:8080/transmission/web/`.
 1. `npm run build` writes the production build to `dist/`.
+1. Before pushing, run `npm run lint`, `npm run format:check` and `npm test`; CI runs the same checks plus a build on every push and pull request.
 
 If you'd rather call Transmission directly with the `TRANSMISSION_HOST` variables, and it's running on a different machine behind Nginx or similar you may have to allow for CORS request. You can do this by adding the code below to your Transmission location block.
 
