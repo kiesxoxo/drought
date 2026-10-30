@@ -10,6 +10,16 @@ Drought is a fast, desktop-style web UI for [Transmission](https://transmissionb
 
 Drought is a fork of [Flood for Transmission](https://github.com/johman10/flood-for-transmission), which is based on the design of [Flood](https://github.com/Flood-UI/flood). Credit for the original design and features goes to their creators.
 
+#### Screenshots
+
+![Main window in light mode, with the details pane open](screenshots/main-light.png)
+
+![Files tab of a large torrent in dark mode](screenshots/files-dark.png)
+
+![Right-click menu with the priority submenu](screenshots/context-menu-light.png)
+
+The screenshots use made-up example data.
+
 #### Feedback
 
 If you have a specific issue or bug, please file a [Github issue](https://github.com/kiesxoxo/drought/issues/new). Also feel free to bring up feature requests that way.
