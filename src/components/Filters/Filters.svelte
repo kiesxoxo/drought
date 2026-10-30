@@ -204,15 +204,19 @@
     let delay;
 
     if (direction === 'in') {
-      const items_to_transition = listLength - previousListLength;
+      const items_to_transition = Math.max(1, listLength - previousListLength);
       duration = totalDuration / items_to_transition;
       delay = index * duration - previousListLength * duration;
     } else {
-      const items_to_transition = previousListLength - listLength;
+      const items_to_transition = Math.max(1, previousListLength - listLength);
       duration = totalDuration / items_to_transition;
       delay =
         (items_to_transition - 1 - index) * duration + listLength * duration;
     }
+
+    // New labels are inserted in sorted order, not appended, so the delay
+    // can come out negative, which makes the browser's animate() throw
+    delay = Math.max(0, delay);
 
     return { delay, duration };
   };
