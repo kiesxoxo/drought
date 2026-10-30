@@ -2,7 +2,7 @@
   import { resizeableTable } from '~helpers/actions';
   import { uiColumns, sorting, tableHeaderConfig } from '~helpers/stores';
 
-  export let id;
+  let { id } = $props();
 
   const columnSizes = uiColumns.sizes;
 
@@ -27,7 +27,7 @@
     class:desc={$sorting.id === id && $sorting.direction === 'desc'}
     class:wrap={$tableHeaderConfig}
     style="width: {$columnSizes[id]}px"
-    on:click={handleClick}
+    onclick={handleClick}
   >
     {uiColumns.getColumnLabel(id)}
     <span class="handle" use:resizeableTable={handleResize}></span>

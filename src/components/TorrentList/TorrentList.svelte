@@ -18,12 +18,9 @@
   const activeColumns = uiColumns.active;
   const { totalSize } = uiColumns;
 
-  $: selectedIds = new Set($selectedTorrents);
+  const selectedIds = $derived(new Set($selectedTorrents));
 
-  const handleTorrentClick = ({
-    detail: { torrent, modifierKey },
-    deselect = true,
-  }) => {
+  const handleTorrentClick = (torrent, modifierKey, deselect = true) => {
     if (modifierKey === 'shift') {
       // Unselect all text to prevent long selection because of shift click
       document.getSelection().removeAllRanges();
@@ -63,7 +60,7 @@
     }
   };
 
-  let menuOpen = false;
+  let menuOpen = $state(false);
   let pressed = null;
 
   // Remember which row a right-click or long-press started on, so the menu
@@ -81,18 +78,12 @@
   const handleMenuOpenChange = (open) => {
     if (!open) return;
     if (pressed && !$selectedTorrents.includes(pressed.id)) {
-      handleTorrentClick({
-        detail: {
-          torrent: { id: pressed.id },
-          modifierKey: pressed.modifierKey,
-        },
-        deselect: false,
-      });
+      handleTorrentClick({ id: pressed.id }, pressed.modifierKey, false);
     }
     if (!$selectedTorrents.length) menuOpen = false;
   };
 
-  let tbody;
+  let tbody = $state(null);
 
   // Moves the selection up or down the list, extending it while shift is held
   const moveSelection = (offset, extend) => {
@@ -164,11 +155,11 @@
   };
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 <ContextMenu.Root bind:open={menuOpen} onOpenChange={handleMenuOpenChange}>
   <ContextMenu.Trigger class="block h-full">
-    <div class="wrapper" on:pointerdown|capture={rememberPressedRow}>
+    <div class="wrapper" onpointerdowncapture={rememberPressedRow}>
       <table class="table" style="width: {$totalSize}px">
         <thead class="table-header">
           {#each $activeColumns as column (column.id)}
@@ -179,7 +170,7 @@
           {#each $sortedTorrents as torrent (torrent[TRANSMISSION_COLUMN_ID])}
             <Torrent
               torrent={torrent}
-              on:click={handleTorrentClick}
+              onselect={handleTorrentClick}
               selected={selectedIds.has(torrent.id)}
             />
           {/each}

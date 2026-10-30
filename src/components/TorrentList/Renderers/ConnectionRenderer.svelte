@@ -1,7 +1,5 @@
 <script>
-  export let value = 0;
-  export let connected = 0;
-  export let torrentStatusClass = null;
+  let { value = 0, connected = 0 } = $props();
 </script>
 
 {value}

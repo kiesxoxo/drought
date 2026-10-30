@@ -3,24 +3,28 @@
   import { getTorrentStatus } from '~helpers/torrentStatusHelper';
   import ProgressBar from '../../ProgressBar/ProgressBar.svelte';
 
-  export let torrent;
-  export let value;
-  export let torrentStatus;
-  export let torrentStatusClass;
-  export let metadataProgress;
-  export let checkingProgress;
-  export const column = null;
+  let {
+    torrent,
+    value,
+    torrentStatus,
+    torrentStatusClass,
+    metadataProgress,
+    checkingProgress,
+  } = $props();
 
-  $: status = getTorrentStatus(torrent);
-  $: isChecking = !STATUSES.includes(torrentStatus) || status.spin;
-  $: progress =
+  const status = $derived(getTorrentStatus(torrent));
+  const isChecking = $derived(!STATUSES.includes(torrentStatus) || status.spin);
+  const progress = $derived(
     metadataProgress < 1
       ? metadataProgress * 100
       : checkingProgress > 0 && checkingProgress < 1
         ? checkingProgress * 100
-        : value * 100;
+        : value * 100
+  );
   // Show 99.9% rather than rounding an unfinished torrent up to 100%
-  $: percent = progress >= 100 ? '100' : String(Math.floor(progress * 10) / 10);
+  const percent = $derived(
+    progress >= 100 ? '100' : String(Math.floor(progress * 10) / 10)
+  );
 </script>
 
 <div
@@ -29,8 +33,7 @@
   title="{status.label} · {percent}%"
   style="--status-tone: {status.tone}"
 >
-  <svelte:component
-    this={status.icon}
+  <status.icon
     class="status-icon {status.spin ? 'animate-spin' : ''}"
     strokeWidth={2.5}
   />

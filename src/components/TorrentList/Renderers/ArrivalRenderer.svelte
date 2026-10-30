@@ -1,22 +1,13 @@
 <script>
   import InfinityIcon from '@lucide/svelte/icons/infinity';
 
-  export let value;
-  export let torrentStatusClass = null;
+  let { value } = $props();
 
-  let seconds;
-  let minutes;
-  let hours;
-  let days;
-
-  $: {
-    seconds = Math.floor(value % 60);
-    if (seconds < 10) seconds = `0${seconds}`;
-    minutes = Math.floor((value / 60) % 60);
-    if (minutes < 10) minutes = `0${minutes}`;
-    hours = Math.floor((value / 60 / 60) % 24);
-    days = Math.floor(value / 60 / 60 / 24);
-  }
+  const pad = (number) => (number < 10 ? `0${number}` : number);
+  const seconds = $derived(pad(Math.floor(value % 60)));
+  const minutes = $derived(pad(Math.floor((value / 60) % 60)));
+  const hours = $derived(Math.floor((value / 60 / 60) % 24));
+  const days = $derived(Math.floor(value / 60 / 60 / 24));
 </script>
 
 <span>

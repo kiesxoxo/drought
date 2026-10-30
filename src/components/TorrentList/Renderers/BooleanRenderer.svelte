@@ -1,8 +1,7 @@
 <script>
   import CheckIcon from '@lucide/svelte/icons/check';
 
-  export let value = false;
-  export let torrentStatusClass = null;
+  let { value = false } = $props();
 </script>
 
 <div>

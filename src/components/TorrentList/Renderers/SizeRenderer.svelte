@@ -1,27 +1,28 @@
 <script>
   import { getSize } from '~helpers/sizeHelper';
 
-  export let value;
-  export let torrentStatusClass = null;
-  export let isSpeed = false;
-  export let isUpload = false;
-  export let perSize = 1024;
+  let {
+    value,
+    torrentStatusClass = null,
+    isSpeed = false,
+    isUpload = false,
+    perSize = 1024,
+  } = $props();
 
-  let size = 'B';
-  $: ({ size, value } = getSize(value, { isSpeed, perSize }));
+  const formatted = $derived(getSize(value, { isSpeed, perSize }));
 </script>
 
-{#if isSpeed && !value}
+{#if isSpeed && !formatted.value}
   <span class="idle" title="Idle">—</span>
 {:else}
   <span
     class:speed={isSpeed}
-    class:active={value > 0}
+    class:active={formatted.value > 0}
     class:upload={isUpload}
     class={torrentStatusClass}
   >
-    {value}
-    <em>{size}</em>
+    {formatted.value}
+    <em>{formatted.size}</em>
   </span>
 {/if}
 

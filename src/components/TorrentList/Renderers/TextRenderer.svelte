@@ -1,7 +1,5 @@
 <script>
-  export let value;
-  export let torrentStatusClass = null;
-  export let size = 'normal';
+  let { value, torrentStatusClass = null, size = 'normal' } = $props();
 </script>
 
 <span class:big={size === 'big'} class={torrentStatusClass}>{value}</span>

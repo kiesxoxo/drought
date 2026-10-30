@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
   let num = 0;
 </script>
 
@@ -15,20 +15,21 @@
   } from '~helpers/fileHelper';
   import FilesIcon from '@lucide/svelte/icons/files';
 
-  let hovering = false;
+  let hovering = $state(false);
   let counter = 0;
-  let input;
 
   num += 1;
   const id = `torrent-dropzone-${num}`;
   const acceptList = ['.torrent', 'application/x-bittorrent'];
 
-  const handleDragEnter = () => {
+  const handleDragEnter = (event) => {
+    event.preventDefault();
     counter += 1;
     hovering = true;
   };
 
-  const handleDragLeave = () => {
+  const handleDragLeave = (event) => {
+    event.preventDefault();
     counter -= 1;
     if (counter !== 0) return;
 
@@ -76,6 +77,7 @@
   };
 
   const handleDrop = (event) => {
+    event.preventDefault();
     hovering = false;
 
     const { dataTransfer } = event;
@@ -88,22 +90,17 @@
 </script>
 
 <svelte:body
-  on:dragenter|preventDefault={handleDragEnter}
-  on:dragleave|preventDefault={handleDragLeave}
-  on:dragover|preventDefault
+  ondragenter={handleDragEnter}
+  ondragleave={handleDragLeave}
+  ondragover={(event) => event.preventDefault()}
 />
 
-<label
-  class="dropzone"
-  class:hovering={hovering}
-  for={id}
-  on:drop|preventDefault={handleDrop}
->
+<label class="dropzone" class:hovering={hovering} for={id} ondrop={handleDrop}>
   <div class="dropzone-content">
     <FilesIcon class="icon" />
     Drop here to add them to Transmission.
   </div>
-  <input type="file" id={id} bind:this={input} multiple />
+  <input type="file" id={id} multiple />
 </label>
 
 <style>

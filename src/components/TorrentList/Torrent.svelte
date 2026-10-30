@@ -1,5 +1,4 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
   import {
     TextRenderer,
     ProgressRenderer,
@@ -23,10 +22,8 @@
   import { generateTorrentStatusClass } from '~helpers/classHelper';
   import { trackerStripper } from '~helpers/trackerHelper';
 
-  const dispatch = createEventDispatcher();
-
-  export let torrent = {};
-  export let selected = false;
+  // onselect(torrent, modifierKey) runs on every click on the row
+  let { torrent = {}, selected = false, onselect } = $props();
 
   const activeColumns = uiColumns.active;
 
@@ -40,12 +37,11 @@
     }
   };
 
-  const dispatchClick = (event) => {
-    dispatch('click', { torrent, modifierKey: getModifierKey(event) });
-  };
-
   let lastClick = 0;
-  const handleClick = () => {
+  const handleClick = (event) => {
+    onselect?.(torrent, getModifierKey(event));
+
+    // Two clicks in quick succession open the details
     const currentTime = new Date().getTime();
     const clickLength = currentTime - lastClick;
     if (clickLength > 0 && clickLength < 500) {
@@ -54,10 +50,12 @@
     lastClick = currentTime;
   };
 
-  $: statusClass = generateTorrentStatusClass(torrent, selected);
+  const statusClass = $derived(generateTorrentStatusClass(torrent, selected));
 
+  // The props functions read `torrent` and `$session` when the template calls
+  // them, so the cells stay reactive without rebuilding this map.
   // TODO: Move to constants/columns, pass torrent and session as arg to props;
-  $: rendererMap = {
+  const rendererMap = {
     [UI_COLUMN.NAME.id]: {
       id: UI_COLUMN.NAME.id,
       component: TextRenderer,
@@ -276,21 +274,12 @@
   };
 </script>
 
-<tr
-  class={statusClass}
-  data-torrent-id={torrent.id}
-  on:click={dispatchClick}
-  on:click={handleClick}
->
+<tr class={statusClass} data-torrent-id={torrent.id} onclick={handleClick}>
   {#each $activeColumns
     .map((column) => rendererMap[column.id])
-    .filter(Boolean) as { id, component, props } (id)}
+    .filter(Boolean) as { id, component: Renderer, props } (id)}
     <td>
-      <svelte:component
-        this={component}
-        torrentStatusClass={statusClass}
-        {...props()}
-      />
+      <Renderer torrentStatusClass={statusClass} {...props()} />
     </td>
   {/each}
 </tr>

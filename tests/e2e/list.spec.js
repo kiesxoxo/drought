@@ -52,3 +52,36 @@ test('toolbar actions follow the selection', async ({ page }) => {
   await row(page, 'Tears of Steel (2012) 4K').click();
   await expect(stop).toBeEnabled();
 });
+
+test('sorts by clicking a column header', async ({ page }) => {
+  const names = () => page.locator('tbody tr td:first-child').allInnerTexts();
+  // Same comparison as the torrents store: lowercase, by code point
+  const byName = (a, b) =>
+    a.toLowerCase() < b.toLowerCase()
+      ? -1
+      : a.toLowerCase() > b.toLowerCase()
+        ? 1
+        : 0;
+
+  await page.locator('thead th', { hasText: 'Name' }).click();
+  const first = await names();
+  const sorted = [...first].sort(byName);
+  expect([sorted, [...sorted].reverse()]).toContainEqual(first);
+
+  await page.locator('thead th', { hasText: 'Name' }).click();
+  expect(await names()).toEqual([...first].reverse());
+});
+
+test('double-click opens the details', async ({ page }) => {
+  await row(page, 'Sintel (2010) 1080p').dblclick();
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Sintel (2010) 1080p' })
+  ).toBeVisible();
+});
+
+test('cells update as the daemon reports new values', async ({ page }) => {
+  // The mock varies transfer rates on every poll
+  const speed = row(page, 'NASA Apollo Archive').locator('td').nth(3);
+  const first = await speed.innerText();
+  await expect.poll(() => speed.innerText(), { timeout: 5000 }).not.toBe(first);
+});
