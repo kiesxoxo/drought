@@ -4,13 +4,15 @@
   import { modals, torrents, alerts, selectedTorrents } from '~helpers/stores';
   import { TRANSMISSION_COLUMN_LABELS } from '~helpers/constants/columns';
 
-  let loading = false;
-  let labelValue = $torrents
-    .filter((t) => $selectedTorrents.includes(t.id))
-    .flatMap((t) => t.labels)
-    .filter(Boolean)
-    .filter((item, index, list) => list.indexOf(item) === index)
-    .join(', ');
+  let loading = $state(false);
+  let labelValue = $state(
+    $torrents
+      .filter((t) => $selectedTorrents.includes(t.id))
+      .flatMap((t) => t.labels)
+      .filter(Boolean)
+      .filter((item, index, list) => list.indexOf(item) === index)
+      .join(', ')
+  );
 
   const handleLabel = () => {
     if (loading) return;
@@ -41,7 +43,12 @@
 <h1>Set labels</h1>
 
 <div class="content">
-  <form on:submit|preventDefault={handleLabel}>
+  <form
+    onsubmit={(event) => {
+      event.preventDefault();
+      handleLabel(event);
+    }}
+  >
     <Input
       type="text"
       bind:value={labelValue}

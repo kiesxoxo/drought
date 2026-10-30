@@ -3,8 +3,8 @@
   import Button from '~components/Button';
   import { modals, torrents, alerts, selectedTorrents } from '~helpers/stores';
 
-  let loading = false;
-  let deleteData = false;
+  let loading = $state(false);
+  let deleteData = $state(false);
 
   const term = $selectedTorrents.length === 1 ? 'torrent' : 'torrents';
 
@@ -36,7 +36,12 @@
 <h1>Remove torrents</h1>
 
 <div class="content">
-  <form on:submit|preventDefault={handleRemove}>
+  <form
+    onsubmit={(event) => {
+      event.preventDefault();
+      handleRemove(event);
+    }}
+  >
     <p>Are you sure you want to remove {$selectedTorrents.length} {term}?</p>
     <Checkbox label="Delete local data" bind:checked={deleteData} />
     <div class="button-group">

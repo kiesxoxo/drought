@@ -12,15 +12,15 @@
     SESSION_COLUMN_UTP_ENABLED,
   } from '~helpers/constants/columns';
 
-  let loadingInitial = true;
-  let submitLoading = false;
+  let loadingInitial = $state(true);
+  let submitLoading = $state(false);
 
-  let peerPort = null;
-  let randomizePeerPort = null;
-  let portForwardingEnabled = null;
-  let utpEnabled = null;
+  let peerPort = $state(null);
+  let randomizePeerPort = $state(null);
+  let portForwardingEnabled = $state(null);
+  let utpEnabled = $state(null);
 
-  let portOpen = false;
+  let portOpen = $state(false);
 
   session.getPortTest().then((isPortOpen) => {
     portOpen = isPortOpen;
@@ -74,7 +74,12 @@
 
 <div class="wrapper" class:loading-initial={loadingInitial}>
   <LoaderIcon class="icon animate-spin" />
-  <form on:submit|preventDefault={handleSubmit}>
+  <form
+    onsubmit={(event) => {
+      event.preventDefault();
+      handleSubmit(event);
+    }}
+  >
     <Header text="Listening port" />
     <Input
       label="Peer listening port"

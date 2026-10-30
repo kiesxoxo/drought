@@ -19,19 +19,19 @@
     SESSION_COLUMN_ALT_SPEED_TIME_END,
   } from '~helpers/constants/columns';
 
-  let loadingInitial = true;
-  let loadingSubmit = false;
+  let loadingInitial = $state(true);
+  let loadingSubmit = $state(false);
 
-  let uploadLimitEnabled = null;
-  let uploadLimit = null;
-  let downloadLimitEnabled = null;
-  let downloadLimit = null;
-  let altLimitsEnabled = null;
-  let altUploadLimit = null;
-  let altDownloadLimit = null;
-  let altSpeedTimeEnabled = null;
-  let altSpeedTimeBegin = null;
-  let altSpeedTimeEnd = null;
+  let uploadLimitEnabled = $state(null);
+  let uploadLimit = $state(null);
+  let downloadLimitEnabled = $state(null);
+  let downloadLimit = $state(null);
+  let altLimitsEnabled = $state(null);
+  let altUploadLimit = $state(null);
+  let altDownloadLimit = $state(null);
+  let altSpeedTimeEnabled = $state(null);
+  let altSpeedTimeBegin = $state(null);
+  let altSpeedTimeEnd = $state(null);
 
   session
     .addColumns([
@@ -104,7 +104,12 @@
 
 <div class="wrapper" class:loading-initial={loadingInitial}>
   <LoaderIcon class="icon animate-spin" />
-  <form on:submit|preventDefault={handleSubmit}>
+  <form
+    onsubmit={(event) => {
+      event.preventDefault();
+      handleSubmit(event);
+    }}
+  >
     <Header text="Speed Limits" />
     <Checkbox bind:checked={uploadLimitEnabled} label="Upload (kB/s)" />
     <Input bind:value={uploadLimit} type="number" />

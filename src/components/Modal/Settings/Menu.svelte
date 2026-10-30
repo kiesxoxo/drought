@@ -6,8 +6,7 @@
   import PaletteIcon from '@lucide/svelte/icons/palette';
   import InfoIcon from '@lucide/svelte/icons/info';
 
-  export let activePageId;
-  export let pages;
+  let { activePageId = $bindable(), pages } = $props();
 
   const ICONS = {
     'torrents': FilesIcon,
@@ -25,6 +24,7 @@
   <h1 class="px-2 pt-1 text-base font-semibold">Settings</h1>
   <ul class="flex flex-col gap-0.5 max-md:flex-row max-md:flex-wrap">
     {#each pages as page (page.id)}
+      {@const PageIcon = ICONS[page.id]}
       <li>
         <button
           class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground {page.id ===
@@ -32,10 +32,9 @@
             ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
             : ''}"
           aria-current={page.id === activePageId ? 'page' : undefined}
-          on:click={() => (activePageId = page.id)}
+          onclick={() => (activePageId = page.id)}
         >
-          <svelte:component
-            this={ICONS[page.id]}
+          <PageIcon
             class="size-4 shrink-0 {page.id === activePageId
               ? 'text-primary'
               : 'text-muted-foreground'}"

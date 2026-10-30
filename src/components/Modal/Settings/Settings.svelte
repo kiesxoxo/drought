@@ -1,7 +1,7 @@
 <script>
   import Menu from './Menu.svelte';
 
-  export let activePageId = 'torrents';
+  let { activePageId = $bindable('torrents') } = $props();
 
   let torrentsComponent;
   let speedComponent;
@@ -83,8 +83,8 @@
   <div class="content">
     {#await pages
       .find((page) => page.id === activePageId)
-      .component() then component}
-      <svelte:component this={component} />
+      .component() then PageComponent}
+      <PageComponent />
     {/await}
   </div>
 </div>

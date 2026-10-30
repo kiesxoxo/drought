@@ -19,18 +19,21 @@
 
   const TORRENT_HASH_REGEX = /^[\da-f]{40}$/i;
 
-  export let fileNames = [];
+  // Prefilled links, e.g. from an ?addtorrent= URL
+  let { fileNames: initialFileNames = [] } = $props();
+  // svelte-ignore state_referenced_locally
+  let fileNames = $state(initialFileNames);
 
-  let loadingInitial = true;
-  let loadingSubmit = false;
-  let tab = 'url';
-  let files = null;
-  let destination = null;
-  let start = null;
+  let loadingInitial = $state(true);
+  let loadingSubmit = $state(false);
+  let tab = $state('url');
+  let files = $state(null);
+  let destination = $state(null);
+  let start = $state(null);
 
-  $: cleanFileNames = fileNames
-    .map((fileName) => fileName.trim())
-    .filter(Boolean);
+  const cleanFileNames = $derived(
+    fileNames.map((fileName) => fileName.trim()).filter(Boolean)
+  );
 
   session
     .addColumns([SESSION_COLUMN_DOWNLOAD_DIR, SESSION_COLUMN_START_ADDED])
@@ -117,15 +120,20 @@
 
 <h1>Add Torrents</h1>
 <ul class="tabs">
-  <li on:click={() => (tab = 'url')} class:active={tab === 'url'}>
+  <li onclick={() => (tab = 'url')} class:active={tab === 'url'}>
     By URL or hash
   </li>
-  <li on:click={() => (tab = 'file')} class:active={tab === 'file'}>By File</li>
+  <li onclick={() => (tab = 'file')} class:active={tab === 'file'}>By File</li>
 </ul>
 
 <div class="content" class:loading-initial={loadingInitial}>
   <LoaderIcon class="icon animate-spin" />
-  <form on:submit|preventDefault={handleSubmit}>
+  <form
+    onsubmit={(event) => {
+      event.preventDefault();
+      handleSubmit(event);
+    }}
+  >
     {#if tab === 'url'}
       <InputMultiple
         label="Torrents"

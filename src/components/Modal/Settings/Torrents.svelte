@@ -27,26 +27,26 @@
     SESSION_COLUMN_SCRIPT_DONE,
   } from '~helpers/constants/columns';
 
-  let loadingInitial = true;
-  let loadingSubmit = false;
-  let downloadDir = null;
-  let startAddedTorrents = null;
-  let renamePartialFiles = null;
-  let seedRatioLimited = null;
-  let seedRatioLimit = null;
-  let idleSeedingLimited = null;
-  let idleSeedingLimit = null;
-  let downloadQueueSize = null;
-  let downloadQueueEnabled = null;
-  let seedQueueSize = null;
-  let seedQueueEnabled = null;
-  let incompleteDir = null;
-  let incompleteDirEnabled = null;
-  let queueStalledEnabled = null;
-  let queueStalledMinutes = null;
-  let removeTorrentFile = null;
-  let scriptDoneEnabled = null;
-  let scriptDone = null;
+  let loadingInitial = $state(true);
+  let loadingSubmit = $state(false);
+  let downloadDir = $state(null);
+  let startAddedTorrents = $state(null);
+  let renamePartialFiles = $state(null);
+  let seedRatioLimited = $state(null);
+  let seedRatioLimit = $state(null);
+  let idleSeedingLimited = $state(null);
+  let idleSeedingLimit = $state(null);
+  let downloadQueueSize = $state(null);
+  let downloadQueueEnabled = $state(null);
+  let seedQueueSize = $state(null);
+  let seedQueueEnabled = $state(null);
+  let incompleteDir = $state(null);
+  let incompleteDirEnabled = $state(null);
+  let queueStalledEnabled = $state(null);
+  let queueStalledMinutes = $state(null);
+  let removeTorrentFile = $state(null);
+  let scriptDoneEnabled = $state(null);
+  let scriptDone = $state(null);
 
   session
     .addColumns([
@@ -138,7 +138,12 @@
 
 <div class="wrapper" class:loading-initial={loadingInitial}>
   <LoaderIcon class="icon animate-spin" />
-  <form on:submit|preventDefault={handleSubmit}>
+  <form
+    onsubmit={(event) => {
+      event.preventDefault();
+      handleSubmit(event);
+    }}
+  >
     <Header text="Downloading" />
     <InputPath
       label="Download to"

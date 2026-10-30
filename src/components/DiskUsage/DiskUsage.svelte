@@ -8,7 +8,7 @@
 
   let data = $derived(
     Promise.all(
-      $paths.map((path) => {
+      $paths.filter(Boolean).map((path) => {
         return transmission.getFreeSpace(path).then((result) => {
           return result.arguments;
         });

@@ -18,14 +18,17 @@
   import { orderable } from '~helpers/actions';
   import { PATH_VALIDATION_REGEX } from '~helpers/constants/paths';
 
-  const newColumns = structuredClone($uiColumns);
-  let newPaths = [...$paths];
-  let newSwitchSpeedColors = $switchSpeedColors;
-  let newTimeConfig = $timeConfig;
-  let newTableHeaderConfig = $tableHeaderConfig;
+  const newColumns = $state(structuredClone($uiColumns));
+  // Dragging reorders the DOM directly (see the orderable action), so the new
+  // order is only recorded here and applied on save
+  let columnOrder = null;
+  let newPaths = $state([...$paths]);
+  let newSwitchSpeedColors = $state($switchSpeedColors);
+  let newTimeConfig = $state($timeConfig);
+  let newTableHeaderConfig = $state($tableHeaderConfig);
   const configuredDarkMode = darkMode.configuredValue;
-  let newDarkMode = $configuredDarkMode;
-  let newDiskUsage = $diskUsage;
+  let newDarkMode = $state($configuredDarkMode);
+  let newDiskUsage = $state($diskUsage);
 
   const darkModeOptions = [
     { label: 'Auto', value: 'auto' },
@@ -35,8 +38,15 @@
 
   const handleSubmit = () => {
     try {
-      uiColumns.set(newColumns);
-      paths.set(newPaths);
+      const columns = $state.snapshot(newColumns);
+      if (columnOrder) {
+        columns.sort(
+          (a, b) => columnOrder.indexOf(a.id) - columnOrder.indexOf(b.id)
+        );
+      }
+      uiColumns.set(columns);
+      // The paths field always keeps one blank row; don't save blanks
+      paths.set(newPaths.map((path) => path.trim()).filter(Boolean));
       switchSpeedColors.set(newSwitchSpeedColors);
       timeConfig.set(newTimeConfig);
       tableHeaderConfig.set(newTableHeaderConfig);
@@ -53,11 +63,16 @@
   };
 
   const handleColumnDrop = (sorting) => {
-    newColumns.sort((a, b) => sorting.indexOf(a.id) - sorting.indexOf(b.id));
+    columnOrder = sorting;
   };
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form
+  onsubmit={(event) => {
+    event.preventDefault();
+    handleSubmit(event);
+  }}
+>
   <Header text="Color scheme" />
   <div class="list">
     <Select

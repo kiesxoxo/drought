@@ -13,10 +13,10 @@
   import { PATH_VALIDATION_REGEX } from '~helpers/constants/paths';
   import { SESSION_COLUMN_DOWNLOAD_DIR } from '~helpers/constants/columns';
 
-  let loadingInitial = true;
-  let loadingSubmit = false;
-  let location = null;
-  let moveData = true;
+  let loadingInitial = $state(true);
+  let loadingSubmit = $state(false);
+  let location = $state(null);
+  let moveData = $state(true);
 
   session
     .addColumns([SESSION_COLUMN_DOWNLOAD_DIR])
@@ -54,7 +54,12 @@
 
 <div class="content" class:loading-initial={loadingInitial}>
   <LoaderIcon class="icon animate-spin" />
-  <form on:submit|preventDefault={handleLocation}>
+  <form
+    onsubmit={(event) => {
+      event.preventDefault();
+      handleLocation(event);
+    }}
+  >
     <InputPath
       type="text"
       bind:value={location}

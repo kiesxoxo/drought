@@ -18,19 +18,19 @@
     SESSION_COLUMN_PEX_ENABLED,
   } from '~helpers/constants/columns';
 
-  let loadingInitial = true;
-  let submitLoading = false;
-  let blocklistUpdateLoading = false;
+  let loadingInitial = $state(true);
+  let submitLoading = $state(false);
+  let blocklistUpdateLoading = $state(false);
 
-  let maxPeersPerTorrent = null;
-  let maxPeersOverall = null;
-  let pexEnabled = null;
-  let dhtEnabled = null;
-  let lpdEnabled = null;
-  let blocklistUrl = null;
-  let blocklistEnabled = null;
-  let blocklistSize = 0;
-  let encryption = null;
+  let maxPeersPerTorrent = $state(null);
+  let maxPeersOverall = $state(null);
+  let pexEnabled = $state(null);
+  let dhtEnabled = $state(null);
+  let lpdEnabled = $state(null);
+  let blocklistUrl = $state(null);
+  let blocklistEnabled = $state(null);
+  let blocklistSize = $state(0);
+  let encryption = $state(null);
 
   const numberFormatter = new Intl.NumberFormat();
   const encryptionOptions = [
@@ -124,7 +124,12 @@
 
 <div class="wrapper" class:loading-initial={loadingInitial}>
   <LoaderIcon class="icon animate-spin" />
-  <form on:submit|preventDefault={handleSubmit}>
+  <form
+    onsubmit={(event) => {
+      event.preventDefault();
+      handleSubmit(event);
+    }}
+  >
     <Header text="Connections" />
     <Input
       bind:value={maxPeersPerTorrent}

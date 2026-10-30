@@ -118,7 +118,7 @@
 <form
   onsubmit={(event) => {
     event.preventDefault();
-    handleSubmit();
+    handleSubmit(event);
   }}
   class="content"
 >
