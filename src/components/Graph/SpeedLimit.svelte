@@ -7,15 +7,20 @@
     SESSION_COLUMN_UNITS_SPEED,
   } from '~helpers/constants/columns';
 
-  export let direction;
-  export let hidden = false;
+  let { direction, hidden = false } = $props();
 
+  // direction is fixed for the component's lifetime
+  // svelte-ignore state_referenced_locally
   const speedLimit = session.speedLimit(direction);
-  $: ({ value: limit, size: limitSize } = getSize($speedLimit, {
-    isSpeed: true,
-    startSize: 'kB',
-    perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SPEED],
-  }));
+  const formatted = $derived(
+    getSize($speedLimit, {
+      isSpeed: true,
+      startSize: 'kB',
+      perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SPEED],
+    })
+  );
+  const limit = $derived(formatted.value);
+  const limitSize = $derived(formatted.size);
 </script>
 
 <div

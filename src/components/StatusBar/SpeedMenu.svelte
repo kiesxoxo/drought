@@ -14,6 +14,8 @@
   let { direction, rate } = $props();
 
   const UNLIMITED = 'unlimited';
+  // direction is fixed for the component's lifetime
+  // svelte-ignore state_referenced_locally
   const speedLimit = session.speedLimit(direction);
 
   const perSize = $derived(

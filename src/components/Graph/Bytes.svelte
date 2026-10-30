@@ -9,26 +9,27 @@
     SESSION_STATS_TOTAL_DOWNLOAD,
   } from '~helpers/constants/columns';
 
-  export let direction;
-  export let hidden = false;
+  let { direction, hidden = false } = $props();
 
+  // direction is fixed for the component's lifetime, so checking once is enough
+  // svelte-ignore state_referenced_locally
   if (!['upload', 'download'].includes(direction)) {
     throw new Error(
       `[Graph/Bytes] unrecognized direction. ${direction} not one of ['upload', 'download']`
     );
   }
 
-  $: valueColumn =
+  const valueColumn = $derived(
     direction === 'upload'
       ? SESSION_STATS_TOTAL_UPLOAD
-      : SESSION_STATS_TOTAL_DOWNLOAD;
+      : SESSION_STATS_TOTAL_DOWNLOAD
+  );
 
-  $: ({ value, size } = getSize(
-    $sessionStats[SESSION_STATS_CUMULATIVE_STATS]?.[valueColumn],
-    {
+  const total = $derived(
+    getSize($sessionStats[SESSION_STATS_CUMULATIVE_STATS]?.[valueColumn], {
       perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
-    }
-  ));
+    })
+  );
 </script>
 
 <div
@@ -37,8 +38,8 @@
   class:download={direction === 'download'}
   class:hidden={hidden}
 >
-  {value}
-  <span class="bytes__size">{size}</span>
+  {total.value}
+  <span class="bytes__size">{total.size}</span>
 </div>
 
 <style>

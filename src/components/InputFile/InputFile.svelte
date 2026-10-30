@@ -17,6 +17,7 @@
     ...rest
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   if (accept?.includes('*')) {
     console.warn(
       '<InputFile> received an non allowed wildcard in the accept value.'

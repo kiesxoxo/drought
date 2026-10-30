@@ -1,6 +1,5 @@
 <script>
   import { slide } from 'svelte/transition';
-  import { afterUpdate } from 'svelte';
   import { torrents, filters, selectedTorrents } from '~helpers/stores';
   import {
     labelFilter,
@@ -33,12 +32,16 @@
 
   const limitedLabelsCount = 3;
   const limitedTrackersCount = 4;
-  let limitTrackers = true;
-  let limitLabels = true;
+  let limitTrackers = $state(true);
+  let limitLabels = $state(true);
+  // Plain variables on purpose: they only feed the next render's transitions
+  // and must not trigger renders themselves
+  // svelte-ignore non_reactive_update
   let previousLabelFiltersLength = 0;
+  // svelte-ignore non_reactive_update
   let previousTrackerFiltersLength = 0;
 
-  $: statusFilters = [
+  const statusFilters = $derived([
     {
       label: 'All',
       value: null,
@@ -87,9 +90,9 @@
       iconName: 'ErrorIcon',
       count: $torrents.filter(statusFilter.bind(null, 'error')).length,
     },
-  ];
+  ]);
 
-  $: priorityFilters = [
+  const priorityFilters = $derived([
     {
       label: 'All',
       value: null,
@@ -110,63 +113,67 @@
       value: -1,
       count: $torrents.filter(priorityFilter.bind(null, -1)).length,
     },
-  ];
+  ]);
 
-  $: labelFilters = [
-    {
-      label: 'All',
-      value: null,
-      count: $torrents.length,
-    },
-    {
-      label: 'Unlabeled',
-      value: 'unlabeled',
-      count: $torrents.filter(labelFilter.bind(null, 'unlabeled')).length,
-    },
-    ...$labels
-      .map((label) => ({
-        label,
-        value: label,
-        count: $torrents.filter(labelFilter.bind(null, label)).length,
-      }))
-      .slice(0, limitLabels ? limitedLabelsCount : $labels.length),
-    $filters.label && {
-      label: $filters.label,
-      value: $filters.label,
-      count: $torrents.filter(trackerFilter.bind(null, $filters.label)).length,
-    },
-  ]
-    .filter(Boolean)
-    .filter(
-      (item, index, list) =>
-        list.map((i) => i.value).indexOf(item.value) === index
-    );
+  const labelFilters = $derived(
+    [
+      {
+        label: 'All',
+        value: null,
+        count: $torrents.length,
+      },
+      {
+        label: 'Unlabeled',
+        value: 'unlabeled',
+        count: $torrents.filter(labelFilter.bind(null, 'unlabeled')).length,
+      },
+      ...$labels
+        .map((label) => ({
+          label,
+          value: label,
+          count: $torrents.filter(labelFilter.bind(null, label)).length,
+        }))
+        .slice(0, limitLabels ? limitedLabelsCount : $labels.length),
+      $filters.label && {
+        label: $filters.label,
+        value: $filters.label,
+        count: $torrents.filter(labelFilter.bind(null, $filters.label)).length,
+      },
+    ]
+      .filter(Boolean)
+      .filter(
+        (item, index, list) =>
+          list.map((i) => i.value).indexOf(item.value) === index
+      )
+  );
 
-  $: trackerFilters = [
-    {
-      label: 'All',
-      value: null,
-      count: $torrents.length,
-    },
-    ...$trackers
-      .map((tracker) => ({
-        label: tracker,
-        value: tracker,
-        count: $torrents.filter(trackerFilter.bind(null, tracker)).length,
-      }))
-      .slice(0, limitTrackers ? limitedTrackersCount : $trackers.length),
-    $filters.tracker && {
-      label: $filters.tracker,
-      value: $filters.tracker,
-      count: $torrents.filter(trackerFilter.bind(null, $filters.tracker))
-        .length,
-    },
-  ]
-    .filter(Boolean)
-    .filter(
-      (item, index, list) =>
-        list.map((i) => i.value).indexOf(item.value) === index
-    );
+  const trackerFilters = $derived(
+    [
+      {
+        label: 'All',
+        value: null,
+        count: $torrents.length,
+      },
+      ...$trackers
+        .map((tracker) => ({
+          label: tracker,
+          value: tracker,
+          count: $torrents.filter(trackerFilter.bind(null, tracker)).length,
+        }))
+        .slice(0, limitTrackers ? limitedTrackersCount : $trackers.length),
+      $filters.tracker && {
+        label: $filters.tracker,
+        value: $filters.tracker,
+        count: $torrents.filter(trackerFilter.bind(null, $filters.tracker))
+          .length,
+      },
+    ]
+      .filter(Boolean)
+      .filter(
+        (item, index, list) =>
+          list.map((i) => i.value).indexOf(item.value) === index
+      )
+  );
 
   const setStatusFilter = (filter) => {
     selectedTorrents.clear();
@@ -188,7 +195,9 @@
     $filters.priority = filter;
   };
 
-  afterUpdate(() => {
+  // Remember the lengths after each render, so the next change can stagger
+  // its slide transitions
+  $effect(() => {
     previousLabelFiltersLength = labelFilters.length;
     previousTrackerFiltersLength = trackerFilters.length;
   });
@@ -226,11 +235,12 @@
   <h2>Filter by status</h2>
   <ul>
     {#each statusFilters as filter (filter.label)}
+      {@const StatusIcon = STATUS_ICONS[filter.iconName]}
       <li
         class:active={$filters.status === filter.value}
-        on:click={setStatusFilter.bind(null, filter.value)}
+        onclick={setStatusFilter.bind(null, filter.value)}
       >
-        <svelte:component this={STATUS_ICONS[filter.iconName]} class="icon" />
+        <StatusIcon class="icon" />
         {filter.label}
         <Badge>{filter.count || 0}</Badge>
       </li>
@@ -242,7 +252,7 @@
     {#each priorityFilters as filter (filter.label)}
       <li
         class:active={$filters.priority === filter.value}
-        on:click={setPriorityFilter.bind(null, filter.value)}
+        onclick={setPriorityFilter.bind(null, filter.value)}
       >
         {filter.label}
         <Badge>{filter.count || 0}</Badge>
@@ -255,7 +265,7 @@
     {#each labelFilters as filter, index (filter.label)}
       <li
         class:active={$filters.label === filter.value}
-        on:click={setLabelFilter.bind(null, filter.value)}
+        onclick={setLabelFilter.bind(null, filter.value)}
         in:slide={getTransitionConfig(
           'in',
           previousLabelFiltersLength,
@@ -275,7 +285,7 @@
     {/each}
     {#if labelFilters.length > limitedLabelsCount}
       <li
-        on:click={() => {
+        onclick={() => {
           limitLabels = !limitLabels;
         }}
       >
@@ -289,7 +299,7 @@
     {#each trackerFilters as filter, index (filter.label)}
       <li
         class:active={$filters.tracker === filter.value}
-        on:click={setTrackerFilter.bind(null, filter.value)}
+        onclick={setTrackerFilter.bind(null, filter.value)}
         in:slide={getTransitionConfig(
           'in',
           previousTrackerFiltersLength,
@@ -309,7 +319,7 @@
     {/each}
     {#if trackerFilters.length > limitedTrackersCount}
       <li
-        on:click={() => {
+        onclick={() => {
           limitTrackers = !limitTrackers;
         }}
       >
