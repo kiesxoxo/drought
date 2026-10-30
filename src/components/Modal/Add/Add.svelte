@@ -153,7 +153,7 @@
     />
     <div class="button-group">
       <Checkbox label="Start Torrent" bind:checked={start} />
-      <Button priority="tertiary" on:click={modals.close}>Cancel</Button>
+      <Button priority="tertiary" onclick={modals.close}>Cancel</Button>
       <Button priority="primary" loading={loadingSubmit} type="submit">
         Add Torrent
       </Button>

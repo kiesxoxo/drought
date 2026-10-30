@@ -95,3 +95,29 @@ test('the speed graph does not move the layout on hover', async ({ page }) => {
   await expect(page.locator('.timestamp')).not.toHaveClass(/hidden/);
   expect(await filters.boundingBox()).toEqual(before);
 });
+
+test('add dialog splits pasted links and adds more fields', async ({
+  page,
+}) => {
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+  const field = page.getByPlaceholder('Torrent URL, Magnet Link or hash');
+  await field.first().focus();
+  await page.evaluate(() => {
+    const data = new DataTransfer();
+    data.setData('text', 'magnet:?xt=urn:btih:aaa\nmagnet:?xt=urn:btih:bbb');
+    document.activeElement.dispatchEvent(
+      new ClipboardEvent('paste', { clipboardData: data, bubbles: true })
+    );
+  });
+  await expect(field).toHaveCount(2);
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('button', { name: 'Add', exact: true }).last().click();
+  await expect(field).toHaveCount(3);
+  await dialog.getByRole('button', { name: 'Remove' }).first().click();
+  await expect(field).toHaveCount(2);
+
+  await page.getByText('By File').click();
+  await expect(
+    page.getByText('Drop some files here, or click to browse.')
+  ).toBeVisible();
+});

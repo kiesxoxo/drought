@@ -1,24 +1,28 @@
-<script context="module">
+<script module>
   let num = 0;
 </script>
 
 <script>
-  import { createEventDispatcher } from 'svelte';
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
   import CheckIcon from '@lucide/svelte/icons/check';
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 
-  export let options;
-  export let placeholder = '';
-  export let direction = 'above';
-  export let value = null;
-  export let label = null;
+  let {
+    options,
+    placeholder = '',
+    direction = 'above',
+    value = null,
+    label = null,
+    // Called with the chosen option's value
+    onchange,
+  } = $props();
 
   num += 1;
   const id = `select-${num}`;
-  const dispatch = createEventDispatcher();
 
-  $: selectedLabel = options.find((option) => option.value === value)?.label;
+  const selectedLabel = $derived(
+    options.find((option) => option.value === value)?.label
+  );
 </script>
 
 <div class="select mb-3 flex flex-col gap-1.5">
@@ -43,7 +47,7 @@
       class="w-(--bits-dropdown-menu-anchor-width) min-w-32"
     >
       {#each options as option (option.label)}
-        <DropdownMenu.Item onSelect={() => dispatch('change', option.value)}>
+        <DropdownMenu.Item onSelect={() => onchange?.(option.value)}>
           <span class="flex-1">{option.label}</span>
           {#if option.value === value}<CheckIcon />{/if}
         </DropdownMenu.Item>

@@ -66,7 +66,7 @@
           <tr>
             <td class="tracker-name">
               <Checkbox
-                on:change={toggleSelectedTracker}
+                onchange={toggleSelectedTracker}
                 group={selectedTrackers}
                 value={tracker.id.toString()}
               />
@@ -90,7 +90,7 @@
     </form>
 
     <div slot="actions">
-      <Button priority="tertiary" on:click={removeTrackers}>
+      <Button priority="tertiary" onclick={removeTrackers}>
         Remove selected
       </Button>
     </div>

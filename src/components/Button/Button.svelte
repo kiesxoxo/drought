@@ -1,16 +1,18 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
   import LoaderIcon from '@lucide/svelte/icons/loader-circle';
   import { buttonVariants } from '$lib/components/ui/button/index.js';
   import { cn } from '$lib/utils.js';
 
-  const dispatch = createEventDispatcher();
-
   // primary/secondary are filled, tertiary/quaternary are outlined,
   // destructive is for irreversible actions
-  export let priority = 'primary';
-  export let type = 'button';
-  export let loading = false;
+  let {
+    priority = 'primary',
+    type = 'button',
+    loading = false,
+    class: className,
+    onclick,
+    children,
+  } = $props();
 
   const VARIANTS = {
     primary: 'default',
@@ -22,7 +24,7 @@
 
   const handleClick = (event) => {
     if (loading) return;
-    dispatch('click', event);
+    onclick?.(event);
   };
 </script>
 
@@ -31,14 +33,14 @@
   class={cn(
     'button',
     buttonVariants({ variant: VARIANTS[priority] ?? 'default' }),
-    $$props.class
+    className
   )}
   aria-busy={loading}
-  on:click={handleClick}
+  onclick={handleClick}
 >
   {#if loading}
     <LoaderIcon class="animate-spin" />
   {:else}
-    <slot />
+    {@render children?.()}
   {/if}
 </button>

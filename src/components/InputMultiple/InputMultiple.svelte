@@ -1,15 +1,14 @@
 <script>
   import Input from '~components/Input';
 
-  export let values;
-  export let type = 'text';
-  export let label = null;
+  let { values = $bindable(), type = 'text', label = null, ...rest } = $props();
 
-  $: {
+  // Always show at least one (empty) field
+  $effect.pre(() => {
     if (!values.length) {
       values = [''];
     }
-  }
+  });
 
   function handlePaste(index, e) {
     // Prevent the original value from actually being pasted
@@ -33,7 +32,7 @@
     const addons = [
       {
         iconName: 'Add',
-        onClick: addEmptyItem.bind(this, index),
+        onClick: () => addEmptyItem(index),
         iconSize: '14px',
       },
     ];
@@ -41,7 +40,7 @@
     if (index !== 0) {
       addons.unshift({
         iconName: 'Remove',
-        onClick: removeItem.bind(this, index),
+        onClick: () => removeItem(index),
         iconSize: '14px',
       });
     }
@@ -68,14 +67,14 @@
       {label}
     </label>
   {/if}
-  {#each values as value, index (index)}
+  {#each values, index (index)}
     <Input
       id="input-multiple-{index}"
       type={type}
-      bind:value={value}
+      bind:value={values[index]}
       addons={getAddons(index)}
-      on:paste={(e) => handlePaste(index, e)}
-      {...$$restProps}
+      onpaste={(e) => handlePaste(index, e)}
+      {...rest}
     />
   {/each}
 </div>

@@ -145,7 +145,7 @@
     <Header text="Privacy" />
     <Select
       options={encryptionOptions}
-      on:change={(event) => (encryption = event.detail)}
+      onchange={(value) => (encryption = value)}
       value={encryption}
       direction="below"
       label="Encryption"
@@ -162,13 +162,13 @@
       <Button
         type="button"
         priority="tertiary"
-        on:click={updateBlocklist}
+        onclick={updateBlocklist}
         loading={blocklistUpdateLoading}>Update blocklist</Button
       >
     </div>
 
     <div class="buttons">
-      <Button type="button" priority="tertiary" on:click={modals.close}>
+      <Button type="button" priority="tertiary" onclick={modals.close}>
         Cancel
       </Button>
       <Button type="submit" priority="primary" loading={submitLoading}>

@@ -1,5 +1,5 @@
 <script>
-  export let progress = 0;
+  let { progress = 0 } = $props();
 </script>
 
 <div class="fill-wrapper">

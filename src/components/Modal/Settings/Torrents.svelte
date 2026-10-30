@@ -199,7 +199,7 @@
     />
 
     <div class="buttons">
-      <Button type="button" priority="tertiary" on:click={modals.close}>
+      <Button type="button" priority="tertiary" onclick={modals.close}>
         Cancel
       </Button>
       <Button type="submit" priority="primary" loading={loadingSubmit}>

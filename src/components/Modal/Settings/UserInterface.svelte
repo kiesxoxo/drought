@@ -62,7 +62,7 @@
   <div class="list">
     <Select
       options={darkModeOptions}
-      on:change={(event) => (newDarkMode = event.detail)}
+      onchange={(value) => (newDarkMode = value)}
       value={newDarkMode}
       direction="below"
       label="Dark mode"
@@ -128,7 +128,7 @@
   </div>
 
   <div class="buttons">
-    <Button type="button" priority="tertiary" on:click={modals.close}>
+    <Button type="button" priority="tertiary" onclick={modals.close}>
       Cancel
     </Button>
     <Button type="submit" priority="primary">Save settings</Button>

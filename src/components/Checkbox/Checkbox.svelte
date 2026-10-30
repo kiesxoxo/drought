@@ -1,15 +1,18 @@
-<script context="module">
+<script module>
   let num = 0;
 </script>
 
 <script>
   import CheckIcon from '@lucide/svelte/icons/check';
 
-  export let label = null;
-  export let checked = false;
-  export let group = null;
-  export let value = null;
-  export let hint = null;
+  let {
+    label = null,
+    checked = $bindable(false),
+    group = $bindable(null),
+    value = null,
+    hint = null,
+    onchange,
+  } = $props();
 
   num += 1;
   const id = `input-checkbox-${num}`;
@@ -27,7 +30,7 @@
         bind:group={group}
         value={value}
         id={id}
-        on:change
+        onchange={onchange}
       />
     {:else}
       <input
@@ -35,7 +38,7 @@
         class="peer sr-only"
         bind:checked={checked}
         id={id}
-        on:change
+        onchange={onchange}
       />
     {/if}
     <span

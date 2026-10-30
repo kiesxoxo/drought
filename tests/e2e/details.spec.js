@@ -81,3 +81,31 @@ test('Enter reopens a collapsed details pane', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect.poll(paneHeight).toBeGreaterThan(200);
 });
+
+test('removes a selected tracker', async ({ page }) => {
+  await openDetails(page, 'NASA Apollo Archive', 'Trackers');
+  await page
+    .locator('td', { hasText: 'https://tracker.opentrackr.org/announce' })
+    .locator('label')
+    .click();
+  await expect(page.getByText('1 tracker selected')).toBeVisible();
+  const set = nextRpc(page, 'torrent-set');
+  await page.getByRole('button', { name: 'Remove selected' }).click();
+  expect((await set).arguments.trackerList).toBe(
+    'https://academictorrents.com/announce'
+  );
+});
+
+test('saves torrent options from the General tab', async ({ page }) => {
+  await openDetails(page, 'Sintel (2010) 1080p');
+  await page.getByLabel('Seed ratio mode').click();
+  await page.getByRole('menuitem', { name: 'Custom' }).click();
+  await page.getByLabel('Seed ratio limit').fill('3.5');
+  const set = nextRpc(page, 'torrent-set');
+  await page.getByRole('button', { name: 'Save config' }).click();
+  expect((await set).arguments).toMatchObject({
+    ids: [6],
+    seedRatioMode: 1,
+    seedRatioLimit: 3.5,
+  });
+});

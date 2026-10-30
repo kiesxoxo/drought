@@ -24,7 +24,7 @@
       <button
         class="text-muted-foreground hover:text-foreground"
         aria-label="Dismiss"
-        on:click={() => alerts.remove(alert.id)}
+        onclick={() => alerts.remove(alert.id)}
       >
         <XIcon class="size-3.5" />
       </button>

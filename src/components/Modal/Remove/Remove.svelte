@@ -40,7 +40,7 @@
     <p>Are you sure you want to remove {$selectedTorrents.length} {term}?</p>
     <Checkbox label="Delete local data" bind:checked={deleteData} />
     <div class="button-group">
-      <Button priority="tertiary" on:click={modals.close}>Cancel</Button>
+      <Button priority="tertiary" onclick={modals.close}>Cancel</Button>
       <Button priority="destructive" loading={loading} type="submit">
         Remove {term}
       </Button>

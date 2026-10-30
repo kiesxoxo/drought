@@ -243,7 +243,7 @@
     <div class="input-group">
       <Select
         options={seedModeOptions}
-        on:change={(event) => (seedIdleMode = event.detail)}
+        onchange={(value) => (seedIdleMode = value)}
         value={seedIdleMode}
         direction="below"
         label="Seed idle mode"
@@ -259,7 +259,7 @@
     <div class="input-group">
       <Select
         options={seedModeOptions}
-        on:change={(event) => (seedRatioMode = event.detail)}
+        onchange={(value) => (seedRatioMode = value)}
         value={seedRatioMode}
         direction="below"
         label="Seed ratio mode"
@@ -275,7 +275,7 @@
   </section>
 
   <div class="buttons">
-    <Button type="button" priority="tertiary" on:click={setServerValues}>
+    <Button type="button" priority="tertiary" onclick={setServerValues}>
       Reset
     </Button>
     <Button type="submit" priority="primary" loading={loadingSubmit}>

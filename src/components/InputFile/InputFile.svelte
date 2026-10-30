@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
   let num = 0;
 </script>
 
@@ -8,37 +8,43 @@
   import XIcon from '@lucide/svelte/icons/x';
   import { areAllFilesValid } from '~helpers/fileHelper';
 
-  export let files;
-  export let label;
-  export let accept = null;
-  export let required = false;
-  export let multiple = false;
+  let {
+    files = $bindable(),
+    label,
+    accept = null,
+    required = false,
+    multiple = false,
+    ...rest
+  } = $props();
 
-  if (accept.indexOf('*') > -1) {
+  if (accept?.includes('*')) {
     console.warn(
       '<InputFile> received an non allowed wildcard in the accept value.'
     );
   }
 
-  $: acceptList = accept
-    ? accept
-        .split(',')
-        .filter(Boolean)
-        .map((type) => type.trim())
-    : null;
+  const acceptList = $derived(
+    accept
+      ? accept
+          .split(',')
+          .filter(Boolean)
+          .map((type) => type.trim())
+      : null
+  );
 
-  let hovering = false;
-  let invalid = false;
-  let input;
+  let hovering = $state(false);
+  let invalid = $state(false);
 
   num += 1;
   const id = `file-input-${num}`;
 
-  const handleDragOver = () => {
+  const handleDragOver = (event) => {
+    event.preventDefault();
     hovering = true;
   };
 
-  const handleDragLeave = () => {
+  const handleDragLeave = (event) => {
+    event.preventDefault();
     hovering = false;
   };
 
@@ -63,6 +69,7 @@
   };
 
   const handleDrop = (event) => {
+    event.preventDefault();
     hovering = false;
 
     const { dataTransfer } = event;
@@ -71,6 +78,7 @@
   };
 
   const handleChange = (event) => {
+    event.preventDefault();
     handleFiles(event.target.files);
     event.target.value = '';
   };
@@ -92,7 +100,7 @@
         <button
           class="remove-file-button"
           type="button"
-          on:click={() => removeFile(file)}
+          onclick={() => removeFile(file)}
         >
           <XIcon class="icon" />
         </button>
@@ -106,10 +114,10 @@
   class:invalid={invalid}
   class:file={files}
   class:hovering={hovering}
-  on:dragenter|preventDefault={handleDragOver}
-  on:dragover|preventDefault={handleDragOver}
-  on:dragleave|preventDefault={handleDragLeave}
-  on:drop|preventDefault={handleDrop}
+  ondragenter={handleDragOver}
+  ondragover={handleDragOver}
+  ondragleave={handleDragLeave}
+  ondrop={handleDrop}
 >
   <FilesIcon class="icon" />
   {#if invalid}
@@ -120,11 +128,10 @@
   <input
     type="file"
     id={id}
-    on:input|preventDefault={handleChange}
-    bind:this={input}
+    oninput={handleChange}
     required={required && (!files || !files.length)}
     multiple={multiple}
-    {...$$restProps}
+    {...rest}
   />
 </label>
 

@@ -49,7 +49,7 @@
       label="Labels (comma separated)"
     />
     <div class="button-group">
-      <Button priority="tertiary" on:click={modals.close}>Cancel</Button>
+      <Button priority="tertiary" onclick={modals.close}>Cancel</Button>
       <Button priority="primary" loading={loading} type="submit"
         >Set labels</Button
       >

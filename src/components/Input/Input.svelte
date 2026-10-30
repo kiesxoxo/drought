@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
   let num = 0;
 </script>
 
@@ -10,28 +10,34 @@
 
   num += 1;
 
-  export let label = null;
-  export let value;
-  export let type = 'text';
-  export let hint = null;
-  export let validationMessage = '';
-  // [{ iconName: 'Add' | 'Remove' | 'Search', onClick, label? }]
-  export let addons = [];
-  export let input = null;
-  export let id = `input-text-${num}`;
-  export let disabled = false;
+  let {
+    label = null,
+    value = $bindable(),
+    type = 'text',
+    hint = null,
+    validationMessage = '',
+    // [{ iconName: 'Add' | 'Remove' | 'Search', onClick, label? }]
+    addons = [],
+    input = $bindable(null),
+    id = `input-text-${num}`,
+    disabled = false,
+    // Extra controls shown inside the field, next to the addons
+    addon,
+    class: extraClass,
+    ...inputProps
+  } = $props();
 
   const ADDON_ICONS = { Add: PlusIcon, Remove: MinusIcon, Search: SearchIcon };
   const ADDON_LABELS = { Add: 'Add', Remove: 'Remove', Search: 'Browse' };
 
   const SUPPORTED_TYPES = ['text', 'number', 'time', 'url'];
-  $: if (!SUPPORTED_TYPES.includes(type)) {
-    console.error(`Invalid type received, ${type}`);
-  }
+  $effect(() => {
+    if (!SUPPORTED_TYPES.includes(type)) {
+      console.error(`Invalid type received, ${type}`);
+    }
+  });
 
-  $: addonCount = addons.length + ($$slots.addon ? 1 : 0);
-  // A class passed by the parent is merged instead of replacing the styling
-  $: ({ class: extraClass, ...inputProps } = $$restProps);
+  const addonCount = $derived(addons.length + (addon ? 1 : 0));
 
   const handleInvalid = (e) => {
     if (!validationMessage) return;
@@ -55,31 +61,28 @@
       id={id}
       {...{ type }}
       bind:this={input}
-      on:invalid={handleInvalid}
-      on:input={(e) => e.target.setCustomValidity('')}
-      on:paste
+      oninvalid={handleInvalid}
+      oninput={(e) => e.target.setCustomValidity('')}
       bind:value={value}
       disabled={disabled}
       {...inputProps}
     />
     {#if addonCount}
       <div class="absolute inset-y-0 right-1 flex items-center gap-0.5">
-        {#each addons as addon (addon.iconName)}
+        {#each addons as item (item.iconName)}
+          {@const AddonIcon = ADDON_ICONS[item.iconName]}
           <button
             type="button"
             class="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
-            aria-label={addon.label ?? ADDON_LABELS[addon.iconName]}
-            title={addon.label ?? ADDON_LABELS[addon.iconName]}
+            aria-label={item.label ?? ADDON_LABELS[item.iconName]}
+            title={item.label ?? ADDON_LABELS[item.iconName]}
             disabled={disabled}
-            on:click={addon.onClick}
+            onclick={item.onClick}
           >
-            <svelte:component
-              this={ADDON_ICONS[addon.iconName]}
-              class="size-3.5"
-            />
+            <AddonIcon class="size-3.5" />
           </button>
         {/each}
-        <slot name="addon" />
+        {@render addon?.()}
       </div>
     {/if}
   </div>

@@ -10,13 +10,14 @@
   };
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if $modals && $modals.component}
+  {@const ModalComponent = $modals.component}
   <div class="modal fixed inset-0 z-40" role="dialog" aria-modal="true">
     <div
       class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
-      on:click={modals.close}
+      onclick={modals.close}
       transition:fade={{ duration: 150 }}
     ></div>
     <div
@@ -27,11 +28,11 @@
       <button
         class="absolute top-3 right-3 z-10 flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         aria-label="Close"
-        on:click={modals.close}
+        onclick={modals.close}
       >
         <XIcon class="size-4" />
       </button>
-      <svelte:component this={$modals.component} {...$modals.props || {}} />
+      <ModalComponent {...$modals.props || {}} />
     </div>
   </div>
 {/if}
