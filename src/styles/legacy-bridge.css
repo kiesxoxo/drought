@@ -9,6 +9,39 @@
   --color-app-background: var(--sidebar);
   --color-app-border: var(--border);
   --color-negative: var(--destructive);
+  --color-positive: var(--positive);
+  --color-download: var(--download);
+  --color-upload: var(--upload);
+
+  --color-progress-bar-download: var(--download);
+  --color-progress-bar-download-background: color-mix(
+    in oklch,
+    var(--download) 18%,
+    transparent
+  );
+  /* Finished torrents, whether seeding or not */
+  --color-progress-bar-upload: var(--completed);
+  --color-progress-bar-upload-background: color-mix(
+    in oklch,
+    var(--completed) 22%,
+    transparent
+  );
+  --color-progress-bar-metadata: color-mix(
+    in oklch,
+    var(--muted-foreground) 70%,
+    transparent
+  );
+  --color-progress-bar-metadata-background: color-mix(
+    in oklch,
+    var(--muted-foreground) 15%,
+    transparent
+  );
+  --color-progress-bar-error: var(--destructive);
+  --color-progress-bar-error-background: color-mix(
+    in oklch,
+    var(--destructive) 18%,
+    transparent
+  );
   --color-active: var(--primary);
   --color-label-background-selected: var(--primary);
   --color-label-text-selected: var(--primary-foreground);

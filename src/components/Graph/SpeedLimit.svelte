@@ -35,8 +35,7 @@
 <style>
   .limit {
     grid-area: limit;
-    color: var(--color-app-background);
-    border-radius: 2px;
+    border-radius: 4px;
     font-size: 10px;
     font-style: normal;
     font-weight: 600;
@@ -48,11 +47,17 @@
   }
 
   .limit.upload {
-    background-color: var(--color-upload);
+    color: var(--color-upload);
+    background-color: color-mix(in oklch, var(--color-upload) 16%, transparent);
   }
 
   .limit.download {
-    background-color: var(--color-download);
+    color: var(--color-download);
+    background-color: color-mix(
+      in oklch,
+      var(--color-download) 16%,
+      transparent
+    );
   }
 
   .limit > :global(.icon) {

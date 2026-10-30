@@ -99,7 +99,7 @@
 
   const handleMouseMove = (event) => {
     hovering = true;
-    const rect = event.target.getBoundingClientRect();
+    const rect = event.currentTarget.getBoundingClientRect();
     mouseX = event.clientX - rect.left;
     ({
       circleTransform: uploadCircleTransform,
@@ -190,10 +190,9 @@
 
 <style>
   .rates {
+    position: relative;
     display: grid;
-    grid-template:
-      'rate-download rate-upload' auto
-      'timestamp timestamp' auto / 1fr 1fr;
+    grid-template: 'rate-download rate-upload' auto / 1fr 1fr;
     font-size: 12px;
     padding: 14px 12px 0;
     line-height: 1;
@@ -259,14 +258,19 @@
     opacity: 0.5;
   }
 
+  /* Overlaid on the top of the graph so showing it never shifts the layout */
   .timestamp {
-    grid-area: timestamp;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 6px;
+    z-index: 1;
+    pointer-events: none;
     color: var(--color-graph-text);
     font-style: italic;
     text-align: center;
-    width: 100%;
     transition: opacity 0.25s;
-    margin-top: -8px;
   }
 
   .timestamp.hidden {

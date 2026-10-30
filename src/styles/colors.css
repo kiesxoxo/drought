@@ -196,11 +196,13 @@
 }
 
 .switch-speed-colors {
-  --color-download: rgb(var(--rgb-upload));
-  --color-upload: rgb(var(--rgb-download));
+  --color-download: var(--upload);
+  --color-upload: var(--download);
 
-  --color-progress-bar-download: rgb(var(--rgb-upload));
-  --color-progress-bar-download-background: rgba(var(--rgb-upload), 0.15);
-  --color-progress-bar-upload: rgb(var(--rgb-download));
-  --color-progress-bar-upload-background: rgba(var(--rgb-download), 0.15);
+  --color-progress-bar-download: var(--upload);
+  --color-progress-bar-download-background: color-mix(
+    in oklch,
+    var(--upload) 18%,
+    transparent
+  );
 }
