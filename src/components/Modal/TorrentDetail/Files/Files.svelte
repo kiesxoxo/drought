@@ -48,9 +48,15 @@
   $: perSize = $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE];
 
   // Only rebuilt when the file list itself changes (first load, rename),
-  // not on every poll.
-  $: tree = files?.length ? buildFileTree(files) : null;
-  $: resetExpanded(tree);
+  // not on every poll. Legacy reactivity treats every object assignment as a
+  // change, so compare the reference by hand.
+  let tree = null;
+  let treeFiles = null;
+  $: if (files !== treeFiles) {
+    treeFiles = files;
+    tree = files?.length ? buildFileTree(files) : null;
+    resetExpanded(tree);
+  }
   $: stats = tree && fileStats ? getFolderStats(tree, fileStats) : null;
   $: matches = tree && query.trim() ? getFileMatches(tree, query) : null;
   // While filtering, folders only count (and toggle) the matching files
