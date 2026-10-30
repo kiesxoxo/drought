@@ -36,51 +36,56 @@
     { label: 'Low', value: -1 },
   ];
 
-  let query = '';
-  // Folder index -> true for every expanded folder
-  let expanded = {};
-  let listElement;
-  let scrollTop = 0;
-  let viewportHeight = 0;
+  let query = $state('');
+  let listElement = $state(null);
+  let scrollTop = $state(0);
+  let viewportHeight = $state(0);
 
-  $: files = $torrentDetails[TRANSMISSION_COLUMN.FILES];
-  $: fileStats = $torrentDetails[TRANSMISSION_COLUMN.FILE_STATS];
-  $: perSize = $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE];
-
-  // Only rebuilt when the file list itself changes (first load, rename),
-  // not on every poll. Legacy reactivity treats every object assignment as a
-  // change, so compare the reference by hand.
-  let tree = null;
-  let treeFiles = null;
-  $: if (files !== treeFiles) {
-    treeFiles = files;
-    tree = files?.length ? buildFileTree(files) : null;
-    resetExpanded(tree);
-  }
-  $: stats = tree && fileStats ? getFolderStats(tree, fileStats) : null;
-  $: matches = tree && query.trim() ? getFileMatches(tree, query) : null;
-  // While filtering, folders only count (and toggle) the matching files
-  $: rowStats =
-    matches && stats ? getFolderStats(tree, fileStats, matches.files) : stats;
-  $: rows = tree ? getVisibleRows(tree, expanded, matches) : [];
-  $: targetFiles = matches ? matches.indices : tree?.order || [];
-
-  $: start = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
-  $: end = Math.min(
-    rows.length,
-    Math.ceil((scrollTop + viewportHeight) / ROW_HEIGHT) + OVERSCAN
+  const files = $derived($torrentDetails[TRANSMISSION_COLUMN.FILES]);
+  const fileStats = $derived($torrentDetails[TRANSMISSION_COLUMN.FILE_STATS]);
+  const perSize = $derived(
+    $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE]
   );
-  $: visibleRows = rows.slice(start, end);
+
+  // Only rebuilt when the file list itself changes (first load, rename), not
+  // on every poll, because polls keep the same files array
+  const tree = $derived(files?.length ? buildFileTree(files) : null);
 
   const expandFolders = (folders) =>
     Object.fromEntries(folders.map((folderIndex) => [folderIndex, true]));
 
-  function resetExpanded(tree) {
-    if (!tree) return;
-    expanded = expandFolders(
-      tree.files.length <= AUTO_EXPAND_FILE_LIMIT ? getAllFolders(tree) : []
-    );
-  }
+  // Folder index -> true for every expanded folder. Starts from a default
+  // for the current tree; the user's changes override it until the tree
+  // itself changes.
+  let expanded = $derived(
+    tree && tree.files.length <= AUTO_EXPAND_FILE_LIMIT
+      ? expandFolders(getAllFolders(tree))
+      : {}
+  );
+
+  const stats = $derived(
+    tree && fileStats ? getFolderStats(tree, fileStats) : null
+  );
+  const matches = $derived(
+    tree && query.trim() ? getFileMatches(tree, query) : null
+  );
+  // While filtering, folders only count (and toggle) the matching files
+  const rowStats = $derived(
+    matches && stats ? getFolderStats(tree, fileStats, matches.files) : stats
+  );
+  const rows = $derived(tree ? getVisibleRows(tree, expanded, matches) : []);
+  const targetFiles = $derived(matches ? matches.indices : tree?.order || []);
+
+  const start = $derived(
+    Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN)
+  );
+  const end = $derived(
+    Math.min(
+      rows.length,
+      Math.ceil((scrollTop + viewportHeight) / ROW_HEIGHT) + OVERSCAN
+    )
+  );
+  const visibleRows = $derived(rows.slice(start, end));
 
   const formatSize = (bytes) => {
     const { value, size } = getSize(bytes, { perSize });
@@ -194,13 +199,13 @@
             ? 'file'
             : 'files'}…"
           bind:value={query}
-          on:keydown={handleSearchKeydown}
+          onkeydown={handleSearchKeydown}
         />
       </label>
       {#if tree.folders.length > 2}
         <button
           class="link"
-          on:click={expandAll}
+          onclick={expandAll}
           disabled={!!matches}
           title="Expand all folders"
         >
@@ -208,7 +213,7 @@
         </button>
         <button
           class="link"
-          on:click={collapseAll}
+          onclick={collapseAll}
           disabled={!!matches}
           title="Collapse all folders"
         >
@@ -242,14 +247,14 @@
         <button
           class="link"
           disabled={!targetFiles.length}
-          on:click={() => setTargetsWanted(true)}
+          onclick={() => setTargetsWanted(true)}
         >
           Download
         </button>
         <button
           class="link"
           disabled={!targetFiles.length}
-          on:click={() => setTargetsWanted(false)}
+          onclick={() => setTargetsWanted(false)}
         >
           Skip
         </button>
@@ -259,7 +264,7 @@
             class="link"
             disabled={!targetFiles.length}
             title="Set priority to {label.toLowerCase()}"
-            on:click={() => setTargetsPriority(value)}
+            onclick={() => setTargetsPriority(value)}
           >
             {label}
           </button>
@@ -292,7 +297,7 @@
       class="list"
       bind:this={listElement}
       bind:clientHeight={viewportHeight}
-      on:scroll={() => (scrollTop = listElement.scrollTop)}
+      onscroll={() => (scrollTop = listElement.scrollTop)}
     >
       {#if !rows.length}
         <div class="empty">No files match “{query}”.</div>
@@ -312,7 +317,7 @@
                   <button
                     class="toggle"
                     class:open={row.expanded}
-                    on:click={() => toggleExpanded(row.folder)}
+                    onclick={() => toggleExpanded(row.folder)}
                     aria-label={row.expanded ? 'Collapse' : 'Expand'}
                   >
                     <ChevronDownIcon class="icon" />
@@ -329,7 +334,7 @@
                     ? 'mixed'
                     : info.wanted === 'all'}
                   title={info.wanted === 'all' ? "Don't download" : 'Download'}
-                  on:click={() => toggleWanted(row, info.wanted)}
+                  onclick={() => toggleWanted(row, info.wanted)}
                 >
                   {#if info.wanted === 'all'}
                     <CheckIcon class="icon" />
@@ -338,19 +343,18 @@
                 {#if row.folder !== undefined}
                   <button
                     class="label"
-                    on:click={() => toggleExpanded(row.folder)}
+                    onclick={() => toggleExpanded(row.folder)}
                   >
-                    <svelte:component
-                      this={row.expanded ? FolderOpenIcon : FolderIcon}
-                      class="icon"
-                    />
+                    {#if row.expanded}<FolderOpenIcon
+                        class="icon"
+                      />{:else}<FolderIcon class="icon" />{/if}
                     <span class="text">{info.name}</span>
                     <span class="count">{info.detail}</span>
                   </button>
                 {:else}
                   <button
                     class="label"
-                    on:click={() => toggleWanted(row, info.wanted)}
+                    onclick={() => toggleWanted(row, info.wanted)}
                   >
                     <FileIcon class="icon" />
                     <span class="text">{info.name}</span>

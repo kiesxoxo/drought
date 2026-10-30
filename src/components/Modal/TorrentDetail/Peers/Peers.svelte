@@ -9,8 +9,12 @@
   import Badge from '~components/Badge';
   import CheckIcon from '@lucide/svelte/icons/check';
 
-  $: peers = $torrentDetails[TRANSMISSION_COLUMN_PEERS];
-  $: ipAddress.add(peers.map((peer) => peer.address));
+  const peers = $derived($torrentDetails[TRANSMISSION_COLUMN_PEERS] ?? []);
+
+  // Look up countries for newly seen peers
+  $effect(() => {
+    ipAddress.add(peers.map((peer) => peer.address));
+  });
 
   const getDownloadSpeed = (peer) => {
     return getSize(peer.rateToClient, {

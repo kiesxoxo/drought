@@ -1,17 +1,17 @@
 <script>
   import { slide } from 'svelte/transition';
 
-  export let items;
-  export let itemName;
-  export let itemNamePlural;
+  // children: the main content, form: shown under it, actions: in the
+  // bar that appears while items are selected
+  let { items, itemName, itemNamePlural, children, form, actions } = $props();
 </script>
 
-<div class="content" class:selected={!!items.length || $$slots.form}>
-  <slot />
+<div class="content" class:selected={!!items.length || !!form}>
+  {@render children?.()}
 </div>
 
 <div class="bar-spacing">
-  <slot name="form" />
+  {@render form?.()}
 </div>
 
 {#if items.length}
@@ -22,7 +22,7 @@
       selected
     </div>
 
-    <slot name="actions" />
+    {@render actions?.()}
   </div>
 {/if}
 

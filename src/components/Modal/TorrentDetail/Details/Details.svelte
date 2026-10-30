@@ -1,4 +1,5 @@
 <script>
+  import { untrack } from 'svelte';
   import { torrentDetails, session } from '~helpers/stores';
   import {
     TRANSMISSION_COLUMN,
@@ -15,22 +16,22 @@
   import InputPath from '~components/InputPath';
   import Button from '~components/Button';
 
-  let downloadLimit = null;
-  let downloadLimitEnabled = null;
-  let uploadLimit = null;
-  let uploadLimitEnabled = null;
-  let honorsSessionLimits = null;
-  let location = null;
-  let peerLimit = null;
-  let queuePosition = null;
-  let seedIdleLimit = null;
-  let seedIdleMode = null;
-  let seedRatioLimit = null;
-  let seedRatioMode = null;
-  let sequentialDownload = null;
+  let downloadLimit = $state(null);
+  let downloadLimitEnabled = $state(null);
+  let uploadLimit = $state(null);
+  let uploadLimitEnabled = $state(null);
+  let honorsSessionLimits = $state(null);
+  let location = $state(null);
+  let peerLimit = $state(null);
+  let queuePosition = $state(null);
+  let seedIdleLimit = $state(null);
+  let seedIdleMode = $state(null);
+  let seedRatioLimit = $state(null);
+  let seedRatioMode = $state(null);
+  let sequentialDownload = $state(null);
 
-  let loadingInitial = true;
-  let loadingSubmit = false;
+  let loadingInitial = $state(true);
+  let loadingSubmit = $state(false);
 
   const seedModeOptions = [
     { label: 'Global', value: 0 },
@@ -38,11 +39,13 @@
     { label: 'Unlimited', value: 2 },
   ];
 
-  $: {
+  // Fill the form once, when the torrent has loaded; later polls must not
+  // overwrite what the user is editing
+  $effect(() => {
     if (loadingInitial && $torrentDetails.loaded) {
-      setServerValues();
+      untrack(setServerValues);
     }
-  }
+  });
 
   function setServerValues() {
     downloadLimit = $torrentDetails[TRANSMISSION_COLUMN.DOWNLOAD_LIMIT];
@@ -93,20 +96,32 @@
       });
   }
 
-  $: size = getSize($torrentDetails[TRANSMISSION_COLUMN.SIZE], {
-    perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
-  });
+  const size = $derived(
+    getSize($torrentDetails[TRANSMISSION_COLUMN.SIZE], {
+      perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
+    })
+  );
 
-  $: downloaded = getSize($torrentDetails[TRANSMISSION_COLUMN.DOWNLOADED], {
-    perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
-  });
+  const downloaded = $derived(
+    getSize($torrentDetails[TRANSMISSION_COLUMN.DOWNLOADED], {
+      perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
+    })
+  );
 
-  $: uploaded = getSize($torrentDetails[TRANSMISSION_COLUMN.UPLOADED], {
-    perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
-  });
+  const uploaded = $derived(
+    getSize($torrentDetails[TRANSMISSION_COLUMN.UPLOADED], {
+      perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
+    })
+  );
 </script>
 
-<form on:submit|preventDefault={handleSubmit} class="content">
+<form
+  onsubmit={(event) => {
+    event.preventDefault();
+    handleSubmit();
+  }}
+  class="content"
+>
   <section class="info">
     <h1 class="header">General</h1>
 

@@ -23,40 +23,39 @@
   import ProgressRenderer from '~components/TorrentList/Renderers/ProgressRenderer';
   import { generateTorrentStatusClass } from '~helpers/classHelper';
 
-  export let torrentId;
+  let { torrentId } = $props();
 
-  $: downloadSpeed = getSize(
-    $torrentDetails[TRANSMISSION_COLUMN.DOWNLOAD_RATE] || 0,
-    {
+  const downloadSpeed = $derived(
+    getSize($torrentDetails[TRANSMISSION_COLUMN.DOWNLOAD_RATE] || 0, {
       isSpeed: true,
       perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SPEED],
-    }
+    })
   );
-  $: uploadSpeed = getSize(
-    $torrentDetails[TRANSMISSION_COLUMN.UPLOAD_RATE] || 0,
-    {
+  const uploadSpeed = $derived(
+    getSize($torrentDetails[TRANSMISSION_COLUMN.UPLOAD_RATE] || 0, {
       isSpeed: true,
       perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SPEED],
-    }
+    })
   );
-  $: downloadSize = getSize(
-    $torrentDetails[TRANSMISSION_COLUMN.DOWNLOADED] || 0,
-    {
+  const downloadSize = $derived(
+    getSize($torrentDetails[TRANSMISSION_COLUMN.DOWNLOADED] || 0, {
       perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
-    }
+    })
   );
-  $: uploadSize = getSize($torrentDetails[TRANSMISSION_COLUMN.UPLOADED] || 0, {
-    perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
-  });
+  const uploadSize = $derived(
+    getSize($torrentDetails[TRANSMISSION_COLUMN.UPLOADED] || 0, {
+      perSize: $session[SESSION_COLUMN_UNITS]?.[SESSION_COLUMN_UNITS_SIZE],
+    })
+  );
 
   const updatePriority = (newPrio) => {
     torrents.setTorrents([torrentId], {
       [TRANSMISSION_COLUMN.PRIORITY]: newPrio,
     });
-    torrentDetails.update((torrent) => {
-      torrent[TRANSMISSION_COLUMN.PRIORITY] = newPrio;
-      return torrent;
-    });
+    torrentDetails.update((torrent) => ({
+      ...torrent,
+      [TRANSMISSION_COLUMN.PRIORITY]: newPrio,
+    }));
   };
 
   const startTorrent = () => {
@@ -65,11 +64,10 @@
     }
 
     torrents.start([torrentId]);
-    torrentDetails.update((torrent) => {
-      torrent[TRANSMISSION_COLUMN.STATUS] =
-        STATUSES.indexOf(STATUS_DOWNLOADING);
-      return torrent;
-    });
+    torrentDetails.update((torrent) => ({
+      ...torrent,
+      [TRANSMISSION_COLUMN.STATUS]: STATUSES.indexOf(STATUS_DOWNLOADING),
+    }));
   };
 
   const stopTorrent = () => {
@@ -78,10 +76,10 @@
     }
 
     torrents.stop([torrentId]);
-    torrentDetails.update((torrent) => {
-      torrent[TRANSMISSION_COLUMN.STATUS] = STATUSES.indexOf(STATUS_STOPPED);
-      return torrent;
-    });
+    torrentDetails.update((torrent) => ({
+      ...torrent,
+      [TRANSMISSION_COLUMN.STATUS]: STATUSES.indexOf(STATUS_STOPPED),
+    }));
   };
 
   const makeEditable = (e) => {
@@ -103,17 +101,17 @@
       $torrentDetails[TRANSMISSION_COLUMN.NAME],
       newName
     );
-    torrentDetails.update((torrent) => {
-      torrent[TRANSMISSION_COLUMN.NAME] = newName;
-      torrent[TRANSMISSION_COLUMN.FILES] = torrent[
-        TRANSMISSION_COLUMN.FILES
-      ]?.map((file) => {
-        const parts = file.name.split('/');
-        parts[0] = newName;
-        return { ...file, name: parts.join('/') };
-      });
-      return torrent;
-    });
+    torrentDetails.update((torrent) => ({
+      ...torrent,
+      [TRANSMISSION_COLUMN.NAME]: newName,
+      [TRANSMISSION_COLUMN.FILES]: torrent[TRANSMISSION_COLUMN.FILES]?.map(
+        (file) => {
+          const parts = file.name.split('/');
+          parts[0] = newName;
+          return { ...file, name: parts.join('/') };
+        }
+      ),
+    }));
     e.target.removeAttribute('contenteditable');
   };
 
@@ -133,10 +131,10 @@
 
 <div class="header">
   <h1
-    on:dblclick={makeEditable}
-    on:blur={rename}
-    on:paste={handlePaste}
-    on:keydown={handleEnter}
+    ondblclick={makeEditable}
+    onblur={rename}
+    onpaste={handlePaste}
+    onkeydown={handleEnter}
   >
     {$torrentDetails[TRANSMISSION_COLUMN.NAME]}
   </h1>
@@ -182,7 +180,7 @@
       </li>
       <li
         class:active={$torrentDetails[TRANSMISSION_COLUMN.STATUS] > 0}
-        on:click={startTorrent}
+        onclick={startTorrent}
         class="button"
       >
         <PlayIcon class="icon" />
@@ -190,7 +188,7 @@
       </li>
       <li
         class:active={$torrentDetails[TRANSMISSION_COLUMN.STATUS] === 0}
-        on:click={stopTorrent}
+        onclick={stopTorrent}
         class="button"
       >
         <PauseIcon class="icon" />

@@ -9,7 +9,7 @@
   import { TRANSMISSION_COLUMN } from '~helpers/constants/columns';
   import { onMount, onDestroy } from 'svelte';
 
-  export let torrentId;
+  let { torrentId } = $props();
 
   const pages = [
     {
@@ -31,7 +31,7 @@
       component: Trackers,
     },
   ];
-  let page = pages[0];
+  let page = $state(pages[0]);
 
   onMount(() => {
     torrentDetails.setTorrentId(torrentId);
@@ -41,9 +41,11 @@
     torrentDetails.clearTorrentId();
   });
 
-  $: torrentDetails.setExtraColumns(page.columns || []);
+  $effect(() => {
+    torrentDetails.setExtraColumns(page.columns || []);
+  });
 
-  $: loadingInitial = !Object.keys($torrentDetails).length;
+  const loadingInitial = $derived(!Object.keys($torrentDetails).length);
 </script>
 
 <div class="container" class:loading-initial={loadingInitial}>
@@ -55,15 +57,17 @@
         <a
           href="/{name.toLowerCase()}"
           class:active={page.name === name}
-          on:click|preventDefault={() =>
-            (page = pages.find((p) => p.name === name))}
+          onclick={(event) => {
+            event.preventDefault();
+            page = pages.find((p) => p.name === name);
+          }}
         >
           {name}
         </a>
       {/each}
     </nav>
     <div class="page-content">
-      <svelte:component this={page.component} />
+      <page.component />
     </div>
   </div>
 </div>

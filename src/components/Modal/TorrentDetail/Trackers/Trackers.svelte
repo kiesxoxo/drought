@@ -7,9 +7,9 @@
   import Checkbox from '~components/Checkbox';
   import Button from '~components/Button';
 
-  $: trackers = $torrentDetails[TRANSMISSION_COLUMN_TRACKERS];
-  let selectedTrackers = [];
-  let newTracker = null;
+  const trackers = $derived($torrentDetails[TRANSMISSION_COLUMN_TRACKERS]);
+  let selectedTrackers = $state([]);
+  let newTracker = $state(null);
 
   const toggleSelectedTracker = (event) => {
     if (!selectedTrackers.includes(event.target.value)) {
@@ -78,22 +78,24 @@
       </tbody>
     </table>
 
-    <form class="new-tracker-form" slot="form" on:submit={addTracker}>
-      <Input
-        bind:value={newTracker}
-        class="new-tracker-input"
-        name="tracker"
-        type="url"
-        placeholder="Tracker announce URL"
-      />
-      <Button type="submit">Add tracker</Button>
-    </form>
+    {#snippet form()}
+      <form class="new-tracker-form" onsubmit={addTracker}>
+        <Input
+          bind:value={newTracker}
+          class="new-tracker-input"
+          name="tracker"
+          type="url"
+          placeholder="Tracker announce URL"
+        />
+        <Button type="submit">Add tracker</Button>
+      </form>
+    {/snippet}
 
-    <div slot="actions">
+    {#snippet actions()}
       <Button priority="tertiary" onclick={removeTrackers}>
         Remove selected
       </Button>
-    </div>
+    {/snippet}
   </ActionBarView>
 </div>
 
