@@ -1,20 +1,9 @@
 <script>
-  import PlayIcon from '@lucide/svelte/icons/play';
-  import SquareIcon from '@lucide/svelte/icons/square';
-  import LoaderIcon from '@lucide/svelte/icons/loader-circle';
-  import {
-    STATUS_STOPPED,
-    STATUS_DOWNLOADING,
-    STATUS_SEEDING,
-  } from '~helpers/constants/statuses';
+  import { STATUSES } from '~helpers/constants/statuses';
+  import { getTorrentStatus } from '~helpers/torrentStatusHelper';
   import ProgressBar from '../../ProgressBar/ProgressBar.svelte';
 
-  const STATUS_ICON_MAP = {
-    [STATUS_STOPPED]: SquareIcon,
-    [STATUS_DOWNLOADING]: PlayIcon,
-    [STATUS_SEEDING]: PlayIcon,
-  };
-
+  export let torrent;
   export let value;
   export let torrentStatus;
   export let torrentStatusClass;
@@ -22,28 +11,31 @@
   export let checkingProgress;
   export const column = null;
 
-  let progress = 0;
-  $: {
-    if (!Object.keys(STATUS_ICON_MAP).includes(torrentStatus)) {
-      progress = checkingProgress * 100;
-    } else if (metadataProgress < 1) {
-      progress = metadataProgress * 100;
-    } else {
-      progress = value * 100;
-    }
-  }
-  // Checking and other transitional states get a spinner
-  $: statusIcon = STATUS_ICON_MAP[torrentStatus] || LoaderIcon;
+  $: status = getTorrentStatus(torrent);
+  $: isChecking = !STATUSES.includes(torrentStatus) || status.spin;
+  $: progress =
+    metadataProgress < 1
+      ? metadataProgress * 100
+      : checkingProgress > 0 && checkingProgress < 1
+        ? checkingProgress * 100
+        : value * 100;
+  // Show 99.9% rather than rounding an unfinished torrent up to 100%
+  $: percent = progress >= 100 ? '100' : String(Math.floor(progress * 10) / 10);
 </script>
 
-<div class="progress-renderer {torrentStatusClass}">
+<div
+  class="progress-renderer {torrentStatusClass}"
+  class:busy={isChecking}
+  title="{status.label} · {percent}%"
+  style="--status-tone: {status.tone}"
+>
   <svelte:component
-    this={statusIcon}
-    class="icon {statusIcon === LoaderIcon ? 'animate-spin' : ''}"
-    fill={statusIcon === LoaderIcon ? 'none' : 'currentColor'}
-    strokeWidth={statusIcon === LoaderIcon ? 2.5 : 0}
+    this={status.icon}
+    class="status-icon {status.spin ? 'animate-spin' : ''}"
+    strokeWidth={2.5}
   />
   <ProgressBar progress={progress} />
+  <span class="percent">{percent}%</span>
 </div>
 
 <style>
@@ -53,27 +45,30 @@
 
     align-items: center;
     display: flex;
+    gap: 8px;
     width: 100%;
     z-index: 1;
-    color: var(--progess-color);
   }
 
-  .progress-renderer :global(.icon) {
+  .progress-renderer :global(.status-icon) {
     flex: 0 0 auto;
-    box-sizing: initial;
-    margin-right: 6px;
-    display: block;
-    height: 10px;
-    width: 10px;
+    width: 14px;
+    height: 14px;
+    color: var(--status-tone);
   }
 
-  /*
-  1: unselected downloading - green - default
-  2: unselected uploading - blue
-  3: unselected stopped - grey
-  4: unselected error - red
-  5: unselected checking/metadata - dark grey
-  */
+  .percent {
+    flex: 0 0 42px;
+    text-align: right;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--foreground);
+  }
+
+  .completed .percent,
+  .stopped .percent {
+    color: var(--muted-foreground);
+  }
 
   .completed {
     --progess-color: var(--color-progress-bar-upload);
@@ -91,7 +86,8 @@
   }
 
   .checking,
-  .metadata {
+  .metadata,
+  .busy {
     --progess-color: var(--color-progress-bar-metadata);
     --background-color: var(--color-progress-bar-metadata-background);
   }

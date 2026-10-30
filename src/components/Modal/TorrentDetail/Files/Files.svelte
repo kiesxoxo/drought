@@ -360,7 +360,11 @@
               <div class="column size">{formatSize(info.length)}</div>
               <div class="column progress">
                 <div class="bar">
-                  <div class="fill" style="width: {info.percent}%"></div>
+                  <div
+                    class="fill"
+                    class:complete={info.percent === 100}
+                    style="width: {info.percent}%"
+                  ></div>
                 </div>
                 <span>{info.percent}%</span>
               </div>
@@ -683,15 +687,20 @@
 
   .bar {
     flex-grow: 1;
-    height: 3px;
-    border-radius: 2px;
+    height: 5px;
+    border-radius: 999px;
     background: var(--color-progress-bar-download-background);
     overflow: hidden;
   }
 
   .fill {
     height: 100%;
+    border-radius: 999px;
     background: var(--color-progress-bar-download);
+  }
+
+  .fill.complete {
+    background: var(--color-progress-bar-upload);
   }
 
   .header-row .progress,

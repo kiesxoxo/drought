@@ -11,17 +11,26 @@
   $: ({ size, value } = getSize(value, { isSpeed, perSize }));
 </script>
 
-<span
-  class:speed={isSpeed}
-  class:active={value > 0}
-  class:upload={isUpload}
-  class={torrentStatusClass}
->
-  {value}
-  <em>{size}</em>
-</span>
+{#if isSpeed && !value}
+  <span class="idle" title="Idle">—</span>
+{:else}
+  <span
+    class:speed={isSpeed}
+    class:active={value > 0}
+    class:upload={isUpload}
+    class={torrentStatusClass}
+  >
+    {value}
+    <em>{size}</em>
+  </span>
+{/if}
 
 <style>
+  .idle {
+    color: var(--muted-foreground);
+    opacity: 0.6;
+  }
+
   em {
     font-size: 10px;
     font-style: normal;

@@ -20,8 +20,14 @@
 </script>
 
 <span>
-  {#if value <= 0}
-    <InfinityIcon class="icon" />
+  <!-- Transmission reports -1 when there's nothing to estimate (finished,
+  stopped) and -2 when it can't estimate (no peers or speed) -->
+  {#if value === -2}
+    <span class="muted" title="Can't estimate yet">
+      <InfinityIcon class="icon" />
+    </span>
+  {:else if value <= 0}
+    <span class="muted" title="Nothing left to download">—</span>
   {:else if days}
     {days}
     <em>d</em>
@@ -41,6 +47,10 @@
 </span>
 
 <style>
+  .muted {
+    color: var(--muted-foreground);
+  }
+
   em {
     font-style: normal;
     font-size: 10px;

@@ -199,6 +199,7 @@
     </ul>
   </div>
   <ProgressRenderer
+    torrent={$torrentDetails}
     value={$torrentDetails[TRANSMISSION_COLUMN.DOWNLOAD_PROGRESS]}
     torrentStatus={STATUSES[$torrentDetails[TRANSMISSION_COLUMN.STATUS]]}
     torrentStatusClass={generateTorrentStatusClass($torrentDetails)}

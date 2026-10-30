@@ -71,6 +71,7 @@
         metadataProgress: torrent[TRANSMISSION_COLUMN.METADATA_PROGRESS],
         checkingProgress: torrent[TRANSMISSION_COLUMN.RECHECK_PROGRESS],
         torrentStatus: STATUSES[torrent[TRANSMISSION_COLUMN.STATUS]],
+        torrent,
       }),
     },
     [UI_COLUMN.DOWNLOADED.id]: {

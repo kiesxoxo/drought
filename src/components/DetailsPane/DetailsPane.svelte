@@ -13,6 +13,7 @@
   import Peers from '~components/Modal/TorrentDetail/Peers';
   import Trackers from '~components/Modal/TorrentDetail/Trackers';
   import PrioritySelect from '~components/PriorityIndicator';
+  import { getTorrentStatus } from '~helpers/torrentStatusHelper';
   import ArrivalRenderer from '~components/TorrentList/Renderers/ArrivalRenderer.svelte';
   import {
     torrentDetails,
@@ -66,7 +67,7 @@
   const torrentId = $derived($selectedTorrents.at(-1) ?? 0);
   const torrent = $derived($torrentDetails);
   const loaded = $derived(torrent.loaded && torrent.id === torrentId);
-  const status = $derived(STATUSES[torrent[TRANSMISSION_COLUMN.STATUS]]);
+  const statusInfo = $derived(getTorrentStatus(torrent));
   const isStopped = $derived(
     torrent[TRANSMISSION_COLUMN.STATUS] === STATUSES.indexOf(STATUS_STOPPED)
   );
@@ -194,7 +195,17 @@
             </h2>
           {/if}
           {#if loaded}
-            <Badge variant="secondary" class="shrink-0">{status}</Badge>
+            <Badge
+              variant="secondary"
+              class="shrink-0 gap-1"
+              style="color: {statusInfo.tone}"
+            >
+              <statusInfo.icon
+                class="size-3 {statusInfo.spin ? 'animate-spin' : ''}"
+                strokeWidth={2.5}
+              />
+              {statusInfo.label}
+            </Badge>
           {:else}
             <LoaderIcon class="size-4 animate-spin text-muted-foreground" />
           {/if}
@@ -207,8 +218,10 @@
             <span class="flex items-center gap-2">
               <span class="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
                 <span
-                  class="block h-full rounded-full bg-primary"
-                  style="width: {progress}%"
+                  class="block h-full rounded-full"
+                  style="width: {progress}%; background: {progress >= 100
+                    ? 'var(--color-progress-bar-upload)'
+                    : 'var(--color-progress-bar-download)'}"
                 ></span>
               </span>
               {progress}%
