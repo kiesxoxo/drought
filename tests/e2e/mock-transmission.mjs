@@ -422,6 +422,10 @@ const createSession = () => ({
 });
 
 let SESSION = createSession();
+// Like Transmission, calls without the current session token get a 409 that
+// carries the new one. POST /__rotate-token simulates a daemon restart.
+let tokenCount = 0;
+const sessionToken = () => `mock-${tokenCount}`;
 
 // Rates wobble a little so the speed graph has something to draw
 const jitter = (torrent) => {
@@ -508,6 +512,13 @@ http
     if (req.url === '/__reset') {
       TORRENTS = createTorrents();
       SESSION = createSession();
+      tokenCount += 1;
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+    if (req.url === '/__rotate-token') {
+      tokenCount += 1;
       res.writeHead(204);
       res.end();
       return;
@@ -516,10 +527,15 @@ http
       let body = '';
       req.on('data', (c) => (body += c));
       req.on('end', () => {
+        if (req.headers['x-transmission-session-id'] !== sessionToken()) {
+          res.writeHead(409, { 'x-transmission-session-id': sessionToken() });
+          res.end('<h1>409: Conflict</h1>');
+          return;
+        }
         const payload = body ? JSON.parse(body) : {};
         res.writeHead(200, {
           'content-type': 'application/json',
-          'x-transmission-session-id': 'mock',
+          'x-transmission-session-id': sessionToken(),
         });
         res.end(
           JSON.stringify({ result: 'success', arguments: handleRpc(payload) })

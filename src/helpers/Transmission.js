@@ -5,6 +5,7 @@ let transmission;
 export default class Transmission {
   _authorizationHeader = null;
   _sessionToken = null;
+  _tokenRequest = null;
   _url = '../rpc';
 
   constructor() {
@@ -56,18 +57,29 @@ export default class Transmission {
     this._sessionToken = response.headers.get(SESSION_TOKEN_HEADER);
   }
 
+  // Calls made before the first token arrives share one handshake, so page
+  // load causes a single 409 instead of one per parallel request
+  fetchToken() {
+    this._tokenRequest ??= this.request('')
+      .then((response) => this.readToken(response))
+      .finally(() => {
+        this._tokenRequest = null;
+      });
+    return this._tokenRequest;
+  }
+
   async rpcCall(method, args) {
     if (!this._sessionToken) {
-      const response = await this.request('');
-      this.readToken(response);
+      await this.fetchToken();
     }
 
-    const response = await this.request(method, args);
+    let response = await this.request(method, args);
 
-    // Invalid token
+    // The token changed (e.g. the daemon restarted): take the new one from the
+    // 409 response and retry once instead of dropping the call
     if (response.status === 409) {
       this.readToken(response);
-      return;
+      response = await this.request(method, args);
     }
 
     if (!response.ok) {
