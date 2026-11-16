@@ -21,6 +21,14 @@
         <CircleAlertIcon class="mt-px size-4 shrink-0 text-destructive" />
       {/if}
       <span class="flex-1">{alert.message}</span>
+      {#if alert.action}
+        <button
+          class="-my-0.5 font-medium text-primary hover:underline"
+          onclick={alert.action.onclick}
+        >
+          {alert.action.label}
+        </button>
+      {/if}
       <button
         class="text-muted-foreground hover:text-foreground"
         aria-label="Dismiss"

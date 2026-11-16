@@ -2,7 +2,8 @@
   import { resizeableTable } from '~helpers/actions';
   import { uiColumns, sorting, tableHeaderConfig } from '~helpers/stores';
 
-  let { id } = $props();
+  // width overrides the column's stored width (the Name column stretches)
+  let { id, width } = $props();
 
   const columnSizes = uiColumns.sizes;
 
@@ -26,7 +27,7 @@
     class:asc={$sorting.id === id && $sorting.direction === 'asc'}
     class:desc={$sorting.id === id && $sorting.direction === 'desc'}
     class:wrap={$tableHeaderConfig}
-    style="width: {$columnSizes[id]}px"
+    style="width: {width ?? $columnSizes[id]}px"
     onclick={handleClick}
   >
     {uiColumns.getColumnLabel(id)}

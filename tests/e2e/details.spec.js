@@ -3,10 +3,44 @@ import { test, expect, row, nextRpc, openDetails } from './fixtures.js';
 const pane = (page) =>
   page.locator('section').filter({ has: page.getByRole('tablist') });
 
-test('shows a hint until a torrent is selected', async ({ page }) => {
-  await expect(
-    page.getByText('Select a torrent to see its details')
-  ).toBeVisible();
+// A collapsed pane is clipped to zero height rather than removed
+const paneHeight = (page) =>
+  page.evaluate(() =>
+    Math.round(
+      [...document.querySelectorAll('[data-pane]')]
+        .at(-1)
+        .getBoundingClientRect().height
+    )
+  );
+
+const dragHandleToBottom = async (page) => {
+  const handle = await page
+    .locator('[data-slot="resizable-handle"]')
+    .boundingBox();
+  await page.mouse.move(handle.x + 300, handle.y + handle.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(handle.x + 300, 895, { steps: 10 });
+  await page.mouse.up();
+};
+
+test('folds away while nothing is selected', async ({ page }) => {
+  await expect.poll(() => paneHeight(page)).toBeLessThan(2);
+  await row(page, 'Sintel (2010) 1080p').click();
+  await expect.poll(() => paneHeight(page)).toBeGreaterThan(200);
+  await page.keyboard.press('Escape');
+  await expect.poll(() => paneHeight(page)).toBeLessThan(2);
+});
+
+test('stays closed after the user collapses it', async ({ page }) => {
+  await row(page, 'Sintel (2010) 1080p').click();
+  await expect.poll(() => paneHeight(page)).toBeGreaterThan(200);
+  await dragHandleToBottom(page);
+  await expect.poll(() => paneHeight(page)).toBeLessThan(2);
+  await page.keyboard.press('Escape');
+  // Another row, so this isn't taken as a double-click (which opens details)
+  await row(page, 'Tears of Steel (2012) 4K').click();
+  await page.waitForTimeout(300);
+  expect(await paneHeight(page)).toBeLessThan(2);
 });
 
 test('shows status and every tab for the selected torrent', async ({
@@ -61,25 +95,14 @@ test('sets torrent priority from the header', async ({ page }) => {
 
 test('Enter reopens a collapsed details pane', async ({ page }) => {
   await row(page, 'Sintel (2010) 1080p').click();
-  const handle = await page
-    .locator('[data-slot="resizable-handle"]')
-    .boundingBox();
-  await page.mouse.move(handle.x + 300, handle.y + handle.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(handle.x + 300, 895, { steps: 10 });
-  await page.mouse.up();
-  // A collapsed pane is clipped to zero height rather than removed
-  const paneHeight = () =>
-    page.evaluate(() =>
-      Math.round(
-        [...document.querySelectorAll('[data-pane]')]
-          .at(-1)
-          .getBoundingClientRect().height
-      )
-    );
-  await expect.poll(paneHeight).toBeLessThan(2);
+  await expect.poll(() => paneHeight(page)).toBeGreaterThan(200);
+  await dragHandleToBottom(page);
+  await expect.poll(() => paneHeight(page)).toBeLessThan(2);
   await page.keyboard.press('Enter');
-  await expect.poll(paneHeight).toBeGreaterThan(200);
+  await expect.poll(() => paneHeight(page)).toBeGreaterThan(200);
+  // An earlier request to show details doesn't keep an empty pane open
+  await page.keyboard.press('Escape');
+  await expect.poll(() => paneHeight(page)).toBeLessThan(2);
 });
 
 test('removes a selected tracker', async ({ page }) => {

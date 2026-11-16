@@ -11,12 +11,31 @@
   import TorrentContextMenu from './TorrentContextMenu.svelte';
   import { Remove } from '~components/Modal';
   import { openTorrentDetails } from '~helpers/torrentDetailHelper';
-  import { TRANSMISSION_COLUMN_ID } from '~helpers/constants/columns';
+  import {
+    TRANSMISSION_COLUMN_ID,
+    UI_COLUMN,
+  } from '~helpers/constants/columns';
   import TorrentDropzone from './TorrentDropzone.svelte';
 
   const sortedTorrents = torrents.sorted;
   const activeColumns = uiColumns.active;
-  const { totalSize } = uiColumns;
+  const { totalSize, sizes: columnSizes } = uiColumns;
+
+  // The Name column takes whatever room the other columns leave, so the list
+  // fills the window without scrolling sideways; its set width is the minimum
+  let listWidth = $state(0);
+  const nameShown = $derived(
+    $activeColumns.some((column) => column.id === UI_COLUMN.NAME.id)
+  );
+  const nameMinWidth = $derived(
+    nameShown ? $columnSizes[UI_COLUMN.NAME.id] : 0
+  );
+  const nameWidth = $derived(
+    nameShown
+      ? Math.max(nameMinWidth, listWidth - ($totalSize - nameMinWidth))
+      : 0
+  );
+  const tableWidth = $derived($totalSize - nameMinWidth + nameWidth);
 
   const selectedIds = $derived(new Set($selectedTorrents));
 
@@ -159,11 +178,18 @@
 
 <ContextMenu.Root bind:open={menuOpen} onOpenChange={handleMenuOpenChange}>
   <ContextMenu.Trigger class="block h-full">
-    <div class="wrapper" onpointerdowncapture={rememberPressedRow}>
-      <table class="table" style="width: {$totalSize}px">
+    <div
+      class="wrapper"
+      bind:clientWidth={listWidth}
+      onpointerdowncapture={rememberPressedRow}
+    >
+      <table class="table" style="width: {tableWidth}px">
         <thead class="table-header">
           {#each $activeColumns as column (column.id)}
-            <ColumnHeader id={column.id} />
+            <ColumnHeader
+              id={column.id}
+              width={column.id === UI_COLUMN.NAME.id ? nameWidth : undefined}
+            />
           {/each}
         </thead>
         <tbody bind:this={tbody}>

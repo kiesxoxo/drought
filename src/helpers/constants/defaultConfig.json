@@ -5,8 +5,8 @@
   "WRAP_HEADER": false,
   "COMMON_PATH": [],
   "COLUMNS": [
-    { "label": "Name", "width": 600, "enabled": true },
-    { "label": "Progress", "width": 300, "enabled": true },
+    { "label": "Name", "width": 200, "enabled": true },
+    { "label": "Progress", "width": 200, "enabled": true },
     { "label": "ETA", "width": 100, "enabled": true },
     { "label": "Download Speed", "width": 100, "enabled": true },
     { "label": "Upload Speed", "width": 100, "enabled": true },

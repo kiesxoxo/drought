@@ -12,13 +12,17 @@ function createAlertStore() {
   return {
     subscribe,
     remove,
-    add: (message, type = 'positive') =>
+    // action: { label, onclick } adds a button; persistent alerts stay until
+    // dismissed
+    add: (message, type = 'positive', { action, persistent = false } = {}) =>
       update((state) => {
         const id = uuid();
-        setTimeout(() => {
-          remove(id);
-        }, ALERT_DURATION);
-        return [...state, { id, message, type }];
+        if (!persistent) {
+          setTimeout(() => {
+            remove(id);
+          }, ALERT_DURATION);
+        }
+        return [...state, { id, message, type, action }];
       }),
   };
 }

@@ -81,6 +81,7 @@ _Note:_ If you run Drought behind SSL and in Chrome you can also run this interf
     - Omitting a key from a column object will fall back to the default value
     - Omitting `enabled` will assume the value to be `true`, and still show the column
     - Note that you can control the order of the columns by the order of the array
+    - The `Name` column stretches to fill the space the other columns leave; its `width` is its minimum
 - `"SORT_COLUMN"`
   - Type: String e.g. `"Ratio"`
 - `"SORT_DIRECTION"`

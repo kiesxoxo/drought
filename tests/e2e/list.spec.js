@@ -85,3 +85,27 @@ test('cells update as the daemon reports new values', async ({ page }) => {
   const first = await speed.innerText();
   await expect.poll(() => speed.innerText(), { timeout: 5000 }).not.toBe(first);
 });
+
+test('the Name column fills the width without sideways scrolling', async ({
+  page,
+}) => {
+  const fit = () =>
+    page.evaluate(() => {
+      const wrapper = document.querySelector('table').parentElement;
+      const name = document.querySelector('thead th').offsetWidth;
+      return {
+        overflow: wrapper.scrollWidth - wrapper.clientWidth,
+        name,
+      };
+    });
+  // The sidebar is open by default at this width, and the defaults still fit
+  await expect.poll(fit).toMatchObject({ overflow: 0 });
+  const narrow = (await fit()).name;
+
+  // Closing the sidebar gives its room to the Name column
+  await page.getByRole('button', { name: 'Toggle sidebar' }).click();
+  await expect
+    .poll(async () => (await fit()).name)
+    .toBeGreaterThan(narrow + 100);
+  expect((await fit()).overflow).toBe(0);
+});

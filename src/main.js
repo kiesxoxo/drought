@@ -1,11 +1,11 @@
+import '~helpers/warmup';
 import './styles/app.css';
 import { mount } from 'svelte';
 import App from '~components/App';
+import { registerServiceWorker } from '~helpers/serviceWorker';
 
 if (__ENV__ === 'production' && 'serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js', {
-    scope: window.location.pathname,
-  });
+  registerServiceWorker().catch(console.error);
 }
 
 mount(App, {
