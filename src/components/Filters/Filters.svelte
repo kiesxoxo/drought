@@ -1,12 +1,6 @@
 <script>
   import { slide } from 'svelte/transition';
   import { torrents, filters, selectedTorrents } from '~helpers/stores';
-  import {
-    labelFilter,
-    statusFilter,
-    trackerFilter,
-    priorityFilter,
-  } from '~helpers/filterHelper';
   import LayersIcon from '@lucide/svelte/icons/layers';
   import ActivityIcon from '@lucide/svelte/icons/activity';
   import ArrowDownToLineIcon from '@lucide/svelte/icons/arrow-down-to-line';
@@ -28,7 +22,7 @@
   };
   import Badge from '~components/Badge';
 
-  const { labels, trackers } = torrents;
+  const { labels, trackers, counts } = torrents;
 
   const limitedLabelsCount = 3;
   const limitedTrackersCount = 4;
@@ -41,138 +35,78 @@
   // svelte-ignore non_reactive_update
   let previousTrackerFiltersLength = 0;
 
+  const STATUS_ITEMS = [
+    { label: 'Active', value: 'active', iconName: 'Active' },
+    { label: 'Downloading', value: 'downloading', iconName: 'DownloadSmall' },
+    { label: 'Complete', value: 'complete', iconName: 'Completed' },
+    { label: 'Stopped', value: 'stopped', iconName: 'StopIcon' },
+    { label: 'Checking', value: 'checking', iconName: 'InformationIcon' },
+    { label: 'Seeding', value: 'seeding', iconName: 'SeedsIcon' },
+    { label: 'Error', value: 'error', iconName: 'ErrorIcon' },
+  ];
+
   const statusFilters = $derived([
-    {
-      label: 'All',
-      value: null,
-      iconName: 'All',
-      count: $torrents.length,
-    },
-    {
-      label: 'Active',
-      value: 'active',
-      iconName: 'Active',
-      count: $torrents.filter(statusFilter.bind(null, 'active')).length,
-    },
-    {
-      label: 'Downloading',
-      value: 'downloading',
-      iconName: 'DownloadSmall',
-      count: $torrents.filter(statusFilter.bind(null, 'downloading')).length,
-    },
-    {
-      label: 'Complete',
-      value: 'complete',
-      iconName: 'Completed',
-      count: $torrents.filter(statusFilter.bind(null, 'complete')).length,
-    },
-    {
-      label: 'Stopped',
-      value: 'stopped',
-      iconName: 'StopIcon',
-      count: $torrents.filter(statusFilter.bind(null, 'stopped')).length,
-    },
-    {
-      label: 'Checking',
-      value: 'checking',
-      iconName: 'InformationIcon',
-      count: $torrents.filter(statusFilter.bind(null, 'checking')).length,
-    },
-    {
-      label: 'Seeding',
-      value: 'seeding',
-      iconName: 'SeedsIcon',
-      count: $torrents.filter(statusFilter.bind(null, 'seeding')).length,
-    },
-    {
-      label: 'Error',
-      value: 'error',
-      iconName: 'ErrorIcon',
-      count: $torrents.filter(statusFilter.bind(null, 'error')).length,
-    },
+    { label: 'All', value: null, iconName: 'All', count: $counts.total },
+    ...STATUS_ITEMS.map((item) => ({
+      ...item,
+      count: $counts.status[item.value],
+    })),
   ]);
 
   const priorityFilters = $derived([
-    {
-      label: 'All',
-      value: null,
-      count: $torrents.length,
-    },
-    {
-      label: 'High',
-      value: 1,
-      count: $torrents.filter(priorityFilter.bind(null, 1)).length,
-    },
-    {
-      label: 'Normal',
-      value: 0,
-      count: $torrents.filter(priorityFilter.bind(null, 0)).length,
-    },
-    {
-      label: 'Low',
-      value: -1,
-      count: $torrents.filter(priorityFilter.bind(null, -1)).length,
-    },
+    { label: 'All', value: null, count: $counts.total },
+    { label: 'High', value: 1, count: $counts.priority[1] },
+    { label: 'Normal', value: 0, count: $counts.priority[0] },
+    { label: 'Low', value: -1, count: $counts.priority[-1] },
   ]);
 
+  // Keeps the first of each value, so the active filter shows up once
+  const uniqueValues = (items) =>
+    items
+      .filter(Boolean)
+      .filter(
+        (item, index, list) =>
+          list.findIndex((other) => other.value === item.value) === index
+      );
+
   const labelFilters = $derived(
-    [
-      {
-        label: 'All',
-        value: null,
-        count: $torrents.length,
-      },
-      {
-        label: 'Unlabeled',
-        value: 'unlabeled',
-        count: $torrents.filter(labelFilter.bind(null, 'unlabeled')).length,
-      },
+    uniqueValues([
+      { label: 'All', value: null, count: $counts.total },
+      { label: 'Unlabeled', value: 'unlabeled', count: $counts.unlabeled },
       ...$labels
+        .slice(0, limitLabels ? limitedLabelsCount : $labels.length)
         .map((label) => ({
           label,
           value: label,
-          count: $torrents.filter(labelFilter.bind(null, label)).length,
-        }))
-        .slice(0, limitLabels ? limitedLabelsCount : $labels.length),
+          count: $counts.labels.get(label),
+        })),
       $filters.label && {
         label: $filters.label,
         value: $filters.label,
-        count: $torrents.filter(labelFilter.bind(null, $filters.label)).length,
+        count:
+          $filters.label === 'unlabeled'
+            ? $counts.unlabeled
+            : $counts.labels.get($filters.label),
       },
-    ]
-      .filter(Boolean)
-      .filter(
-        (item, index, list) =>
-          list.map((i) => i.value).indexOf(item.value) === index
-      )
+    ])
   );
 
   const trackerFilters = $derived(
-    [
-      {
-        label: 'All',
-        value: null,
-        count: $torrents.length,
-      },
+    uniqueValues([
+      { label: 'All', value: null, count: $counts.total },
       ...$trackers
+        .slice(0, limitTrackers ? limitedTrackersCount : $trackers.length)
         .map((tracker) => ({
           label: tracker,
           value: tracker,
-          count: $torrents.filter(trackerFilter.bind(null, tracker)).length,
-        }))
-        .slice(0, limitTrackers ? limitedTrackersCount : $trackers.length),
+          count: $counts.trackers.get(tracker),
+        })),
       $filters.tracker && {
         label: $filters.tracker,
         value: $filters.tracker,
-        count: $torrents.filter(trackerFilter.bind(null, $filters.tracker))
-          .length,
+        count: $counts.trackers.get($filters.tracker),
       },
-    ]
-      .filter(Boolean)
-      .filter(
-        (item, index, list) =>
-          list.map((i) => i.value).indexOf(item.value) === index
-      )
+    ])
   );
 
   const setStatusFilter = (filter) => {

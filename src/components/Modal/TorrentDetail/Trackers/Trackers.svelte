@@ -1,5 +1,5 @@
 <script>
-  import { torrentDetails } from '~helpers/stores';
+  import { torrentDetails, torrents } from '~helpers/stores';
   import { TRANSMISSION_COLUMN_TRACKERS } from '~helpers/constants/columns';
   import Badge from '~components/Badge';
   import Input from '~components/Input';
@@ -28,7 +28,10 @@
       (t) => !selectedTrackers.includes(t.id.toString())
     );
     newTrackers = newTrackers.map((tracker) => tracker.announce).join('\n\n');
-    torrentDetails.setTrackers($torrentDetails, newTrackers);
+    torrentDetails
+      .setTrackers($torrentDetails, newTrackers)
+      // The list only gets trackers with full fetches
+      .then(() => torrents.refresh());
     selectedTrackers = [];
   };
 
@@ -40,7 +43,10 @@
     );
     newTrackers = newTrackers.map((tracker) => tracker.announce);
     newTrackers = [...newTrackers, newTracker.trim()].join('\n\n');
-    torrentDetails.setTrackers($torrentDetails, newTrackers);
+    torrentDetails
+      .setTrackers($torrentDetails, newTrackers)
+      // The list only gets trackers with full fetches
+      .then(() => torrents.refresh());
     newTracker = null;
   };
 </script>

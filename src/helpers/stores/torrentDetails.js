@@ -140,13 +140,12 @@ function createTorrentDetailsStore() {
         .catch(() => set(previous));
       updateFileStats(torrent, fileIndices, { priority });
     },
-    setTrackers: (torrent, trackerList) => {
+    setTrackers: (torrent, trackerList) =>
       transmission
         .setTorrents([torrent[TRANSMISSION_COLUMN.ID]], {
           [TRANSMISSION_COLUMN.TRACKER_LIST]: trackerList,
         })
-        .catch(() => set({ ...torrent, loaded: true }));
-    },
+        .catch(() => set({ ...torrent, loaded: true })),
     setDetails: (torrent, data) => {
       const promise = transmission
         .setTorrents([torrent[TRANSMISSION_COLUMN.ID]], data)

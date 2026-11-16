@@ -4,6 +4,7 @@
     selectedTorrents,
     torrents,
     modals,
+    session,
   } from '~helpers/stores';
   import ColumnHeader from '~components/TorrentList/ColumnHeader.svelte';
   import Torrent from '~components/TorrentList/Torrent.svelte';
@@ -14,6 +15,7 @@
   import {
     TRANSMISSION_COLUMN_ID,
     UI_COLUMN,
+    SESSION_COLUMN_UNITS,
   } from '~helpers/constants/columns';
   import TorrentDropzone from './TorrentDropzone.svelte';
 
@@ -38,6 +40,49 @@
   const tableWidth = $derived($totalSize - nameMinWidth + nameWidth);
 
   const selectedIds = $derived(new Set($selectedTorrents));
+  // Read here once instead of by every row
+  const columnIds = $derived($activeColumns.map((column) => column.id));
+  const units = $derived($session[SESSION_COLUMN_UNITS]);
+
+  // Only the rows in view, plus a few either side, are in the page; spacer
+  // rows stand in for the rest. Rows have a fixed height, so a list of
+  // thousands renders and updates like one of a few dozen.
+  const OVERSCAN = 10;
+  let wrapper = $state(null);
+  let scrollTop = $state(0);
+  let viewHeight = $state(0);
+  let rowHeight = $state(28);
+  const firstRow = $derived(
+    Math.max(0, Math.floor(scrollTop / rowHeight) - OVERSCAN)
+  );
+  const lastRow = $derived(
+    Math.min(
+      $sortedTorrents.length,
+      Math.ceil((scrollTop + viewHeight) / rowHeight) + OVERSCAN
+    )
+  );
+  const visibleTorrents = $derived($sortedTorrents.slice(firstRow, lastRow));
+
+  // Measured rather than assumed, so the spacers match the real rows
+  $effect(() => {
+    if (!visibleTorrents.length) return;
+    const row = tbody?.querySelector('tr[data-torrent-id]');
+    const height = row?.getBoundingClientRect().height;
+    if (height) rowHeight = height;
+  });
+
+  // Rows outside the window aren't in the page, so scroll by position
+  const scrollRowIntoView = (index) => {
+    if (!wrapper) return;
+    const headerHeight = wrapper.querySelector('thead')?.offsetHeight ?? 0;
+    const rowTop = index * rowHeight;
+    const rowBottom = headerHeight + rowTop + rowHeight;
+    if (rowTop < wrapper.scrollTop) {
+      wrapper.scrollTop = rowTop;
+    } else if (rowBottom > wrapper.scrollTop + wrapper.clientHeight) {
+      wrapper.scrollTop = rowBottom - wrapper.clientHeight;
+    }
+  };
 
   const handleTorrentClick = (torrent, modifierKey, deselect = true) => {
     if (modifierKey === 'shift') {
@@ -122,7 +167,7 @@
     } else {
       selectedTorrents.set([torrentId]);
     }
-    tbody?.children[index]?.scrollIntoView({ block: 'nearest' });
+    scrollRowIntoView(index);
   };
 
   const focusSearch = () => {
@@ -180,7 +225,10 @@
   <ContextMenu.Trigger class="block h-full">
     <div
       class="wrapper"
+      bind:this={wrapper}
       bind:clientWidth={listWidth}
+      bind:clientHeight={viewHeight}
+      onscroll={(event) => (scrollTop = event.currentTarget.scrollTop)}
       onpointerdowncapture={rememberPressedRow}
     >
       <table class="table" style="width: {tableWidth}px">
@@ -193,13 +241,32 @@
           {/each}
         </thead>
         <tbody bind:this={tbody}>
-          {#each $sortedTorrents as torrent (torrent[TRANSMISSION_COLUMN_ID])}
+          {#if firstRow > 0}
+            <tr class="spacer" aria-hidden="true">
+              <td
+                colspan={columnIds.length}
+                style="height: {firstRow * rowHeight}px"
+              ></td>
+            </tr>
+          {/if}
+          {#each visibleTorrents as torrent (torrent[TRANSMISSION_COLUMN_ID])}
             <Torrent
               torrent={torrent}
+              columns={columnIds}
+              units={units}
               onselect={handleTorrentClick}
               selected={selectedIds.has(torrent.id)}
             />
           {/each}
+          {#if lastRow < $sortedTorrents.length}
+            <tr class="spacer" aria-hidden="true">
+              <td
+                colspan={columnIds.length}
+                style="height: {($sortedTorrents.length - lastRow) *
+                  rowHeight}px"
+              ></td>
+            </tr>
+          {/if}
         </tbody>
       </table>
       {#if !$modals}
@@ -216,6 +283,11 @@
     overflow: auto;
     position: relative;
     background-color: var(--color-torrent-list-background);
+  }
+
+  .spacer td {
+    padding: 0;
+    border: 0;
   }
 
   .table {
