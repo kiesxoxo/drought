@@ -226,7 +226,6 @@
     <div
       class="wrapper"
       bind:this={wrapper}
-      bind:clientWidth={listWidth}
       bind:clientHeight={viewHeight}
       onscroll={(event) => (scrollTop = event.currentTarget.scrollTop)}
       onpointerdowncapture={rememberPressedRow}
@@ -269,6 +268,9 @@
           {/if}
         </tbody>
       </table>
+      <!-- Measures the width inside the list's scrollbar: the list's own size
+      doesn't change when a vertical scrollbar appears, so it can't tell -->
+      <div class="width-probe" bind:clientWidth={listWidth}></div>
       {#if !$modals}
         <TorrentDropzone />
       {/if}
@@ -283,6 +285,10 @@
     overflow: auto;
     position: relative;
     background-color: var(--color-torrent-list-background);
+  }
+
+  .width-probe {
+    height: 0;
   }
 
   .spacer td {
